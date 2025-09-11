@@ -2,11 +2,12 @@ package com.lumenlabs.energymanagement.dto.company;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
 public class CompanyRegistrationDTO {
-	
+
 	@NotBlank(message = "CNPJ é obrigatório")
 	@Size(min = 14, max = 14, message = "CNPJ deve ter 14 dígitos")
 	private String cnpj;
@@ -15,12 +16,36 @@ public class CompanyRegistrationDTO {
 	@Size(max = 100, message = "Razão social deve ter no máximo 100 caracteres")
 	private String razaoSocial;
 
-	@NotBlank(message = "Nome Fantasia é obrigatório")
-	@Size(max = 100, message = "Nome fantasia deve ter no máximo 100 caracteres")
+	@NotBlank(message = "Nome é obrigatório")
+	@Size(max = 100, message = "Nome deve ter no máximo 100 caracteres")
 	private String nomeFantasia;
 
 	@Pattern(regexp = "\\+?\\d{0,3}?\\s?\\(?\\d{2,3}\\)?\\s?\\d{4,5}-?\\d{4}", message = "Telefone inválido")
 	private String telefone;
+
+	@NotBlank(message = "Logradouro é obrigatório")
+	private String logradouro;
+
+	@NotNull(message = "Número é obrigatório")
+	private Integer number;
+
+	@NotBlank(message = "Bairro é obrigatório")
+	private String bairro;
+
+	@NotBlank(message = "CEP é obrigatório")
+	private String zipCode;
+
+	@NotBlank(message = "Cidade é obrigatória")
+	private String city;
+
+	@NotBlank(message = "UF é obrigatória")
+	private String uf;
+
+	@NotBlank(message = "Complemento é obrigatório")
+	private String complemento;
+
+	@NotBlank(message = "Nome do administrador é obrigatório")
+	private String adminName;
 
 	@NotBlank(message = "Email do administrador é obrigatório")
 	@Email(message = "Email inválido")
@@ -77,7 +102,69 @@ public class CompanyRegistrationDTO {
 	public void setCnpj(String cnpj) {
 		this.cnpj = cnpj;
 	}
-	
-	
+
+	public String getLogradouro() {
+		return logradouro;
+	}
+
+	public void setLogradouro(String logradouro) {
+		this.logradouro = logradouro;
+	}
+
+	public Integer getNumber() {
+		return number;
+	}
+
+	public void setNumber(Integer number) {
+		this.number = number;
+	}
+
+	public String getBairro() {
+		return bairro;
+	}
+
+	public void setBairro(String bairro) {
+		this.bairro = bairro;
+	}
+
+	public String getZipCode() {
+		return zipCode;
+	}
+
+	public void setZipCode(String zipCode) {
+		this.zipCode = zipCode;
+	}
+
+	public String getCity() {
+		return city;
+	}
+
+	public void setCity(String city) {
+		this.city = city;
+	}
+
+	public String getUf() {
+		return uf;
+	}
+
+	public void setUf(String uf) {
+		this.uf = uf;
+	}
+
+	public String getComplemento() {
+		return complemento;
+	}
+
+	public void setComplemento(String complemento) {
+		this.complemento = complemento;
+	}
+
+	public String getAdminName() {
+		return adminName;
+	}
+
+	public void setAdminName(String adminName) {
+		this.adminName = adminName;
+	}
 
 }

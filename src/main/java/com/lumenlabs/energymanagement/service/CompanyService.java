@@ -2,14 +2,15 @@ package com.lumenlabs.energymanagement.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import com.lumenlabs.energymanagement.dto.company.CompanyRegistrationDTO;
-import com.lumenlabs.energymanagement.enums.Role;
+import com.lumenlabs.energymanagement.mapper.company.CompanyRegistrationMapper;
+import com.lumenlabs.energymanagement.model.Address;
 import com.lumenlabs.energymanagement.model.Company;
 import com.lumenlabs.energymanagement.model.User;
+import com.lumenlabs.energymanagement.repository.AddressRepository;
 import com.lumenlabs.energymanagement.repository.CompanyRepository;
 import com.lumenlabs.energymanagement.repository.UserRepository;
 
@@ -23,13 +24,16 @@ public class CompanyService {
 	@Autowired
 	private CompanyRepository companyRepository;
 	@Autowired
-	private PasswordEncoder passwordEncoder;
+	private AddressRepository addressRepository;
+	@Autowired
+	private CompanyRegistrationMapper companyRegistrationMapper;
 
 	@Transactional
 	public Company registerCompanyWithAdmin(CompanyRegistrationDTO dto) {
-		if (userRepository.findByEmail(dto.getAdminEmail()).isPresent()) {
-			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Email do administrador já registrado");
-		}
+		userRepository.findByEmail(dto.getAdminEmail())
+	    .ifPresent(u -> {
+	        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Email do administrador já registrado");
+	    });
 		
 		if(companyRepository.existsByLegalName(dto.getRazaoSocial())) {
 			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Razão Social já registrada");
@@ -39,16 +43,11 @@ public class CompanyService {
 			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "CNPJ já registrado");
 		}
 
-		Company company = new Company();
-		company.setLegalName(dto.getRazaoSocial());
-		company.setName(dto.getNomeFantasia());
+		Company company = companyRegistrationMapper.mapToCompany(dto);
 		companyRepository.save(company);
-
-		User admin = new User();
-		admin.setEmail(dto.getAdminEmail());
-		admin.setPassword(passwordEncoder.encode(dto.getAdminPassword()));
-		admin.setRole(Role.ADMIN);
-		admin.setCompany(company);
+		Address address = companyRegistrationMapper.mapToAddress(dto, company);
+		addressRepository.save(address);
+		User admin = companyRegistrationMapper.mapToAdminUser(dto, company);;
 		userRepository.save(admin);
 
 		return company;

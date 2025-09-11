@@ -49,6 +49,7 @@ public class GlobalExceptionHandler {
     
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorDefault> handleAllExceptions(Exception ex, WebRequest request) {
+    	ex.printStackTrace();
         ErrorDefault error = new ErrorDefault(
             LocalDateTime.now(),
             500,

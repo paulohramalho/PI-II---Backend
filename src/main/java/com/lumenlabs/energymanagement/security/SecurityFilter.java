@@ -3,11 +3,13 @@ package com.lumenlabs.energymanagement.security;
 import java.io.IOException;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
+import org.springframework.web.server.ResponseStatusException;
 
 import com.lumenlabs.energymanagement.model.User;
 import com.lumenlabs.energymanagement.repository.UserRepository;
@@ -35,7 +37,7 @@ public class SecurityFilter extends OncePerRequestFilter {
 
 		if (token != null) {
 			String login = jwtService.validateToken(token);
-			User user = userRepository.findByEmail(login).get();
+			User user = userRepository.findByEmail(login).orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Usuário não encontrado"));
 			if (user != null) {
 				Authentication auth = new UsernamePasswordAuthenticationToken(login, null, user.getAuthorities());
 

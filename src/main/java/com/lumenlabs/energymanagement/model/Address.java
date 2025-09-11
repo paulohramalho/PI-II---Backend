@@ -16,10 +16,10 @@ public class Address {
 
 	@Id
 	private Long id;
-    @OneToOne
-    @MapsId
-    @JoinColumn(name = "id")
-    private Company company;
+	@OneToOne
+	@MapsId
+	@JoinColumn(name = "id")
+	private Company company;
 	@Column(length = 250, nullable = false)
 	private String logradouro;
 	@Column(name = "numero", nullable = false)
@@ -111,6 +111,14 @@ public class Address {
 
 	public void setComplemento(String complemento) {
 		this.complemento = complemento;
+	}
+
+	public Company getCompany() {
+		return company;
+	}
+
+	public void setCompany(Company company) {
+		this.company = company;
 	}
 
 	@Override

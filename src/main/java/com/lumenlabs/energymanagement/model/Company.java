@@ -27,7 +27,7 @@ public class Company {
 	private String cnpj;
 	@Column(name = "telefone", length = 20)
 	private String phoneNumber;
-	@OneToOne(mappedBy = "company", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+	@OneToOne(mappedBy = "company", cascade = CascadeType.REMOVE, orphanRemoval = true, fetch = FetchType.LAZY)
 	private Address address;
 
 	public Company() {
