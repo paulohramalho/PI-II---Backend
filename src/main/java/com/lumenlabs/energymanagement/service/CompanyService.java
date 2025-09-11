@@ -6,7 +6,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
-import com.lumenlabs.energymanagement.dto.security.CompanyRegistrationDTO;
+import com.lumenlabs.energymanagement.dto.company.CompanyRegistrationDTO;
 import com.lumenlabs.energymanagement.enums.Role;
 import com.lumenlabs.energymanagement.model.Company;
 import com.lumenlabs.energymanagement.model.User;
@@ -28,11 +28,15 @@ public class CompanyService {
 	@Transactional
 	public Company registerCompanyWithAdmin(CompanyRegistrationDTO dto) {
 		if (userRepository.findByEmail(dto.getAdminEmail()).isPresent()) {
-			throw new  ResponseStatusException(HttpStatus.BAD_REQUEST, "Email do administrador já registrado");
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Email do administrador já registrado");
 		}
 		
-		if(companyRepository.findByLegalName(dto.getRazaoSocial()).isPresent()) {
+		if(companyRepository.existsByLegalName(dto.getRazaoSocial())) {
 			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Razão Social já registrada");
+		}
+		
+		if(companyRepository.existsByCnpj(dto.getCnpj())) {
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "CNPJ já registrado");
 		}
 
 		Company company = new Company();

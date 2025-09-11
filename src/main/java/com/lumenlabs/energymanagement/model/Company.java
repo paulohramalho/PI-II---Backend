@@ -1,16 +1,15 @@
 package com.lumenlabs.energymanagement.model;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Objects;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 
 @Table(name = "empresa")
@@ -24,16 +23,17 @@ public class Company {
 	private String name;
 	@Column(name = "razao_social", length = 100, nullable = false, unique = true)
 	private String legalName;
+	@Column(name = "cnpj", length = 20, nullable = false, unique = true)
+	private String cnpj;
 	@Column(name = "telefone", length = 20)
 	private String phoneNumber;
-	@OneToMany(mappedBy = "company", cascade = CascadeType.REMOVE, orphanRemoval = true)
-	private List<User> users = new ArrayList<>();
+	@OneToOne(mappedBy = "company", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+	private Address address;
 
 	public Company() {
 	}
 
-	public Company(Long id, String name, String legalName, String phoneNumber) {
-		this.id = id;
+	public Company(String name, String legalName, String phoneNumber) {
 		this.name = name;
 		this.legalName = legalName;
 		this.phoneNumber = phoneNumber;
@@ -69,6 +69,22 @@ public class Company {
 
 	public void setPhoneNumber(String phoneNumber) {
 		this.phoneNumber = phoneNumber;
+	}
+
+	public String getCnpj() {
+		return cnpj;
+	}
+
+	public void setCnpj(String cnpj) {
+		this.cnpj = cnpj;
+	}
+
+	public Address getAddress() {
+		return address;
+	}
+
+	public void setAddress(Address address) {
+		this.address = address;
 	}
 
 	@Override

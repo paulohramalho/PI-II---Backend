@@ -1,4 +1,4 @@
-package com.lumenlabs.energymanagement.dto.security;
+package com.lumenlabs.energymanagement.dto.company;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -6,6 +6,10 @@ import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
 public class CompanyRegistrationDTO {
+	
+	@NotBlank(message = "CNPJ é obrigatório")
+	@Size(min = 14, max = 14, message = "CNPJ deve ter 14 dígitos")
+	private String cnpj;
 
 	@NotBlank(message = "Razão social é obrigatória")
 	@Size(max = 100, message = "Razão social deve ter no máximo 100 caracteres")
@@ -65,5 +69,15 @@ public class CompanyRegistrationDTO {
 	public void setAdminPassword(String adminPassword) {
 		this.adminPassword = adminPassword;
 	}
+
+	public String getCnpj() {
+		return cnpj;
+	}
+
+	public void setCnpj(String cnpj) {
+		this.cnpj = cnpj;
+	}
+	
+	
 
 }
