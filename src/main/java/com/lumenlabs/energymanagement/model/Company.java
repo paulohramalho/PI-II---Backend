@@ -11,8 +11,13 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 
-@Table(name = "empresa")
+@Table(name = "empresa",
+uniqueConstraints = {
+        @UniqueConstraint(columnNames = {"cnpj"}),
+        @UniqueConstraint(columnNames = {"cnpj", "razao_social"})
+    })
 @Entity
 public class Company {
 
@@ -21,7 +26,7 @@ public class Company {
 	private Long id;
 	@Column(name = "nome", length = 100, nullable = false)
 	private String name;
-	@Column(name = "razao_social", length = 100, nullable = false, unique = true)
+	@Column(name = "razao_social", length = 100, nullable = false)
 	private String legalName;
 	@Column(name = "cnpj", length = 20, nullable = false, unique = true)
 	private String cnpj;

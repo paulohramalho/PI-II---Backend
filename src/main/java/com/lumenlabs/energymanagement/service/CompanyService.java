@@ -35,8 +35,8 @@ public class CompanyService {
 	        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Email do administrador já registrado");
 	    });
 		
-		if(companyRepository.existsByLegalName(dto.getRazaoSocial())) {
-			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Razão Social já registrada");
+		if(companyRepository.existsByLegalNameAndCnpj(dto.getRazaoSocial(), dto.getCnpj())) {
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Razão Social já registrada para esse CNPJ");
 		}
 		
 		if(companyRepository.existsByCnpj(dto.getCnpj())) {

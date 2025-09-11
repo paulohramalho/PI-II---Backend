@@ -6,7 +6,7 @@ import com.lumenlabs.energymanagement.model.Company;
 
 public interface CompanyRepository extends JpaRepository<Company, Long>{
 
-	Boolean existsByLegalName(String razaoSocial);
+	Boolean existsByLegalNameAndCnpj(String razaoSocial, String cnpj);
 	Boolean existsByCnpj(String cnpj);
 
 }
