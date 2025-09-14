@@ -4,21 +4,30 @@ import java.util.Objects;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 
 @Entity
-@Table(name = "tipo_dispositivo")
+@Table(name = "tipo_dispositivo", 
+       uniqueConstraints = @UniqueConstraint(columnNames = {"nome", "fk_empresa"}))
 public class DeviceType {
 
-	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Long id;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
-	@Column(name = "nome", nullable = false, unique = true)
-	private String name;
+    @Column(name = "nome", nullable = false)
+    private String name;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "fk_empresa", nullable = false)
+    private Company company;
 
 	public DeviceType() {
 	}

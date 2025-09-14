@@ -25,7 +25,7 @@ public class DeviceRoom {
 	@JoinColumn(name = "fk_sala", nullable = false)
 	private Room room;
 
-	@ManyToOne(fetch = FetchType.LAZY)
+	@ManyToOne(fetch = FetchType.EAGER)
 	@MapsId("deviceId")
 	@JoinColumn(name = "fk_dispositivo", nullable = false)
 	private Device device;
