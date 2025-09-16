@@ -5,8 +5,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import com.lumenlabs.energymanagement.dto.company.CompanyDTO;
 import com.lumenlabs.energymanagement.dto.company.CompanyRegistrationDTO;
 import com.lumenlabs.energymanagement.dto.company.CompanyUpdateDTO;
+import com.lumenlabs.energymanagement.mapper.company.CompanyMapper;
 import com.lumenlabs.energymanagement.mapper.company.CompanyRegistrationMapper;
 import com.lumenlabs.energymanagement.mapper.company.CompanyUpdateMapper;
 import com.lumenlabs.energymanagement.model.Address;
@@ -32,6 +34,8 @@ public class CompanyService {
 	private CompanyRegistrationMapper companyRegistrationMapper;
 	@Autowired
 	private CompanyUpdateMapper companyUpdateMapper;
+	@Autowired
+	private CompanyMapper companyMapper;
 
 	@Transactional
 	public Company registerCompanyWithAdmin(CompanyRegistrationDTO dto) {
@@ -56,7 +60,7 @@ public class CompanyService {
 		User admin = userRepository.findByCompanyId(id).orElseThrow(
 				() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuário não encontrado"));
 		if (userRepository.existsByEmailAndIdNot(dto.getAdminEmail(), admin.getId())) {
-		    throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Email já registrado para outro usuário");
+		    throw new ResponseStatusException(HttpStatus.CONFLICT, "Email já registrado para outro usuário");
 		}
 		companyUpdateMapper.copyToCompany(dto, company);
 		companyRepository.save(company);
@@ -68,15 +72,15 @@ public class CompanyService {
 
 	private void basicValidation(CompanyRegistrationDTO dto) {
 		userRepository.findByEmail(dto.getAdminEmail()).ifPresent(u -> {
-			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Email do administrador já registrado");
+			throw new ResponseStatusException(HttpStatus.CONFLICT, "Email do administrador já registrado");
 		});
 
 		if (companyRepository.existsByLegalNameAndCnpj(dto.getRazaoSocial(), dto.getCnpj())) {
-			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Razão Social já registrada para esse CNPJ");
+			throw new ResponseStatusException(HttpStatus.CONFLICT, "Razão Social já registrada para esse CNPJ");
 		}
 
 		if (companyRepository.existsByCnpj(dto.getCnpj())) {
-			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "CNPJ já registrado");
+			throw new ResponseStatusException(HttpStatus.CONFLICT, "CNPJ já registrado");
 		}
 	}
 
@@ -84,5 +88,15 @@ public class CompanyService {
 		if(!companyRepository.existsById(id))
 			throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Empresa não encontrada");
 		companyRepository.deleteById(id);
+	}
+
+	public CompanyDTO getCompany(Long id) {
+		Company company = companyRepository.findById(id).orElseThrow(
+				() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Empresa não encontrada"));
+		Address address = addressRepository.findById(id).orElseThrow(
+				() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Endereço não encontrado"));
+		User admin = userRepository.findByCompanyId(id).orElseThrow(
+				() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuário não encontrado"));
+		return companyMapper.mapToCompanyDTO(company, address, admin);
 	}
 }
