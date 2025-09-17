@@ -1,12 +1,13 @@
 package com.lumenlabs.energymanagement.dto.security;
 
+import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
 public class LoginDTO {
 
 	@NotBlank
-	@Size(max = 50)
+	@Email(message = "Email inválido")
 	private String email;
 	@NotBlank
 	@Size(max = 50)

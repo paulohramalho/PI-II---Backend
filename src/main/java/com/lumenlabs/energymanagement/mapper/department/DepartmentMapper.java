@@ -26,4 +26,9 @@ public class DepartmentMapper {
 		return department;
 	}
 	
+	public void copyToDepartment(DepartmentRegistrationDTO dto, Department department) {
+		department.setDescription(dto.getDescription());
+		department.setName(dto.getName());
+	}
+	
 }

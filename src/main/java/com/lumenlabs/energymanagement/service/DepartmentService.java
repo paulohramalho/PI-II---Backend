@@ -40,4 +40,19 @@ public class DepartmentService {
 		return departmentMapper.mapToDepartmentDTO(department);
 	}
 
+	public void updateDepartment(Company company, DepartmentRegistrationDTO departmentRegistrationDTO, Long id) {
+		Department department = departmentRepository.findByCompanyIdAndId(company.getId(), id)
+				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Setor não encontrado"));
+		if(departmentRepository.existsByCompanyIdAndNameAndIdNot(company.getId(), departmentRegistrationDTO.getName(), id))
+			throw new ResponseStatusException(HttpStatus.CONFLICT, "Setor já existente");
+		departmentMapper.copyToDepartment(departmentRegistrationDTO, department);
+		departmentRepository.save(department);
+	}
+
+	public void deleteDepartment(Long companyId, Long id) {
+		Department department = departmentRepository.findByCompanyIdAndId(companyId, id)
+				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Setor não encontrado"));
+		departmentRepository.delete(department);
+	}
+
 }

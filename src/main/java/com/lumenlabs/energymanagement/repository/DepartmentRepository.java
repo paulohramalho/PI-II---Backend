@@ -12,4 +12,5 @@ public interface DepartmentRepository extends JpaRepository<Department, Long> {
 	Boolean existsByCompanyIdAndName(Long companyId, String name);
 	Page<Department> findAllByCompanyIdAndNameContaining(Long companyId, String name, Pageable pageable);
 	Optional<Department> findByCompanyIdAndId(Long companyId, Long id);
+	boolean existsByCompanyIdAndNameAndIdNot(Long companyId, String name, Long id);
 }
