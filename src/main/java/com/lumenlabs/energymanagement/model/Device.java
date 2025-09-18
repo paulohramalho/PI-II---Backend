@@ -29,6 +29,9 @@ public class Device {
 	@ManyToOne(fetch = FetchType.LAZY, optional = false)
 	@JoinColumn(name = "fk_tipo_dispositivo", nullable = false)
 	private DeviceType deviceType;
+	@ManyToOne(optional = false, fetch = FetchType.LAZY)
+	@JoinColumn(name = "fk_empresa", nullable = false)
+	private Company company;
 
 	public Device() {
 	}
