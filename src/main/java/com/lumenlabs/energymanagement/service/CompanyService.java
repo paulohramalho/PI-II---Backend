@@ -46,28 +46,21 @@ public class CompanyService {
 		Address address = companyRegistrationMapper.mapToAddress(dto, company);
 		addressRepository.save(address);
 		User admin = companyRegistrationMapper.mapToAdminUser(dto, company);
-		;
 		userRepository.save(admin);
 
 		return company;
 	}
 
+	@Transactional
 	public void updateCompanyWithAdmin(@Valid CompanyUpdateDTO dto, Long id) {
 		Company company = companyRepository.findById(id).orElseThrow(
 				() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Empresa não encontrada"));
 		Address address = addressRepository.findById(id).orElseThrow(
 				() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Endereço não encontrado"));
-		User admin = userRepository.findByCompanyId(id).orElseThrow(
-				() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuário não encontrado"));
-		if (userRepository.existsByEmailAndIdNot(dto.getAdminEmail(), admin.getId())) {
-		    throw new ResponseStatusException(HttpStatus.CONFLICT, "Email já registrado para outro usuário");
-		}
 		companyUpdateMapper.copyToCompany(dto, company);
 		companyRepository.save(company);
 		companyUpdateMapper.copyToAddress(dto, address);
 		addressRepository.save(address);
-		companyUpdateMapper.copyToAdminUser(dto, admin);
-		userRepository.save(admin);
 	}
 
 	private void basicValidation(CompanyRegistrationDTO dto) {
@@ -84,6 +77,7 @@ public class CompanyService {
 		}
 	}
 
+	@Transactional
 	public void deleteCompanyWithAdmin(Long id) {
 		if(!companyRepository.existsById(id))
 			throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Empresa não encontrada");
@@ -95,8 +89,6 @@ public class CompanyService {
 				() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Empresa não encontrada"));
 		Address address = addressRepository.findById(id).orElseThrow(
 				() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Endereço não encontrado"));
-		User admin = userRepository.findByCompanyId(id).orElseThrow(
-				() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuário não encontrado"));
-		return companyMapper.mapToCompanyDTO(company, address, admin);
+		return companyMapper.mapToCompanyDTO(company, address);
 	}
 }

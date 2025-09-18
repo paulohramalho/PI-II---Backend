@@ -28,6 +28,9 @@ public class Room {
 	@ManyToOne(optional = false, fetch = FetchType.LAZY)
 	@JoinColumn(name = "fk_setor", nullable = false)
 	private Department department;
+	@ManyToOne(optional = false, fetch = FetchType.LAZY)
+	@JoinColumn(name = "fk_empresa", nullable = false)
+	private Company company;
 
 	public Room() {
 	}
@@ -68,6 +71,14 @@ public class Room {
 
 	public void setDepartment(Department department) {
 		this.department = department;
+	}
+
+	public Company getCompany() {
+		return company;
+	}
+
+	public void setCompany(Company company) {
+		this.company = company;
 	}
 
 	@Override

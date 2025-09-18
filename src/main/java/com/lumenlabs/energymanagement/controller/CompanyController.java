@@ -18,10 +18,12 @@ import com.lumenlabs.energymanagement.dto.company.CompanyUpdateDTO;
 import com.lumenlabs.energymanagement.service.CompanyService;
 import com.lumenlabs.energymanagement.util.SecurityUtils;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/company")
+@Tag(name = "Empresa")
 public class CompanyController {
 	
 	@Autowired

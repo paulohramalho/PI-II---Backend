@@ -15,10 +15,12 @@ import com.lumenlabs.energymanagement.dto.security.LoginDTO;
 import com.lumenlabs.energymanagement.dto.security.TokenDTO;
 import com.lumenlabs.energymanagement.service.JWTService;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/login")
+@Tag(name = "Auth")
 public class AuthenticationController {
 
 	@Autowired
