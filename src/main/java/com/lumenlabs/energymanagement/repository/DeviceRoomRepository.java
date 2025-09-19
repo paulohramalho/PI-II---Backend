@@ -1,5 +1,7 @@
 package com.lumenlabs.energymanagement.repository;
 
+import java.util.UUID;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -14,7 +16,7 @@ public interface DeviceRoomRepository extends JpaRepository<DeviceRoom, RoomDevi
     @Query("SELECT dr FROM DeviceRoom dr " +
            "WHERE dr.room.department.company.id = :companyId " +
            "AND (:deviceName IS NULL OR dr.device.name LIKE %:deviceName%)")
-    Page<DeviceRoom> findAllByCompanyId(@Param("companyId") Long companyId,
+    Page<DeviceRoom> findAllByCompanyId(@Param("companyId") UUID companyId,
                                         @Param("deviceName") String deviceName,
                                         Pageable pageable);
 
@@ -22,8 +24,8 @@ public interface DeviceRoomRepository extends JpaRepository<DeviceRoom, RoomDevi
            "WHERE dr.room.id = :roomId " +
            "AND dr.room.department.company.id = :companyId " +
            "AND (:deviceName IS NULL OR dr.device.name LIKE %:deviceName%)")
-    Page<DeviceRoom> findAllByRoomIdAndCompanyId(@Param("roomId") Long roomId,
-                                                 @Param("companyId") Long companyId,
+    Page<DeviceRoom> findAllByRoomIdAndCompanyId(@Param("roomId") UUID roomId,
+                                                 @Param("companyId") UUID companyId,
                                                  @Param("deviceName") String deviceName,
                                                  Pageable pageable);
 
@@ -31,8 +33,8 @@ public interface DeviceRoomRepository extends JpaRepository<DeviceRoom, RoomDevi
            "WHERE dr.room.department.id = :departmentId " +
            "AND dr.room.department.company.id = :companyId " +
            "AND (:deviceName IS NULL OR dr.device.name LIKE %:deviceName%)")
-    Page<DeviceRoom> findAllByDepartmentIdAndCompanyId(@Param("departmentId") Long departmentId,
-                                                       @Param("companyId") Long companyId,
+    Page<DeviceRoom> findAllByDepartmentIdAndCompanyId(@Param("departmentId") UUID departmentId,
+                                                       @Param("companyId") UUID companyId,
                                                        @Param("deviceName") String deviceName,
                                                        Pageable pageable);
 }

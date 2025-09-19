@@ -1,5 +1,7 @@
 package com.lumenlabs.energymanagement.service;
 
+import java.util.UUID;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -29,10 +31,10 @@ public class RoomService {
 	@Autowired
 	private RoomMapper roomMapper;
 	
-	public Page<RoomDTO> getRoomByDepartment(Long companyId, Long departmentId, String name, Pageable pageable){
+	public Page<RoomDTO> getRoomByDepartment(UUID companyId, UUID departmentId, String name, Pageable pageable){
 		if(!departmentRepository.existsByCompanyIdAndId(companyId, departmentId))
 			throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Setor não encontrado");
-		return roomRepository.findAllByDepartmentIdAndCompanyIdAndNameContaining(departmentId, companyId, name, pageable)
+		return roomRepository.findAllByDepartmentIdAndCompanyIdAndNameContainingIgnoreCase(departmentId, companyId, name, pageable)
 				.map(roomMapper::mapToRoomDTO);
 	}
 
@@ -46,13 +48,13 @@ public class RoomService {
 		return roomRepository.save(room);
 	}
 
-	public RoomDTO getRoom(Long companyId, Long id) {
+	public RoomDTO getRoom(UUID companyId, UUID id) {
 		Room room = roomRepository.findByCompanyIdAndId(companyId, id)
 				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Sala não encontrada"));
 		return roomMapper.mapToRoomDTO(room);
 	}
 
-	public void updateRoom(Company company, RoomUpdateDTO roomRegistrationDTO, Long id) {
+	public void updateRoom(Company company, RoomUpdateDTO roomRegistrationDTO, UUID id) {
 		Room room = roomRepository.findByCompanyIdAndId(company.getId(), id)
 				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Sala não encontrada"));
 		if(roomRepository.existsByCompanyIdAndDepartmentIdAndNameAndIdNot(company.getId(), room.getDepartment().getId(), roomRegistrationDTO.getName(), id))
@@ -61,7 +63,7 @@ public class RoomService {
 		roomRepository.save(room);
 	}
 
-	public void deleteRoom(Long companyId, Long id) {
+	public void deleteRoom(UUID companyId, UUID id) {
 		Room room = roomRepository.findByCompanyIdAndId(companyId, id)
 				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Sala não encontrado"));
 		roomRepository.delete(room);

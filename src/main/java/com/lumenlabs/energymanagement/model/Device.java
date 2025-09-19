@@ -2,6 +2,7 @@ package com.lumenlabs.energymanagement.model;
 
 import java.math.BigDecimal;
 import java.util.Objects;
+import java.util.UUID;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -20,8 +21,8 @@ uniqueConstraints = @UniqueConstraint(columnNames = {"nome", "fk_tipo_dispositiv
 public class Device {
 
 	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Long id;
+	@GeneratedValue(strategy = GenerationType.AUTO)
+	private UUID id;
 	@Column(name = "nome", nullable = false)
 	private String name;
 	@Column(name = "potencia", nullable = false, precision = 5, scale = 3)
@@ -42,11 +43,11 @@ public class Device {
 		this.deviceType = deviceType;
 	}
 
-	public Long getId() {
+	public UUID getId() {
 		return id;
 	}
 
-	public void setId(Long id) {
+	public void setId(UUID id) {
 		this.id = id;
 	}
 

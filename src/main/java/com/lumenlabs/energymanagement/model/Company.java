@@ -2,6 +2,7 @@ package com.lumenlabs.energymanagement.model;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.UUID;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -13,19 +14,14 @@ import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
-import jakarta.persistence.UniqueConstraint;
 
-@Table(name = "empresa",
-uniqueConstraints = {
-        @UniqueConstraint(columnNames = {"cnpj"}),
-        @UniqueConstraint(columnNames = {"cnpj", "razao_social"})
-    })
+@Table(name = "empresa")
 @Entity
 public class Company {
 
 	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Long id;
+	@GeneratedValue(strategy = GenerationType.AUTO)
+	private UUID id;
 	@Column(name = "nome", length = 100, nullable = false)
 	private String name;
 	@Column(name = "razao_social", length = 100, nullable = false)
@@ -50,11 +46,11 @@ public class Company {
 		this.phoneNumber = phoneNumber;
 	}
 
-	public Long getId() {
+	public UUID getId() {
 		return id;
 	}
 
-	public void setId(Long id) {
+	public void setId(UUID id) {
 		this.id = id;
 	}
 

@@ -1,6 +1,7 @@
 package com.lumenlabs.energymanagement.controller;
 
 import java.net.URI;
+import java.util.UUID;
 
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,12 +47,12 @@ public class DepartmentController {
 	private SecurityUtils securityUtils;
 	
 	@GetMapping("/{id}")
-	public ResponseEntity<DepartmentDTO> getDepartment(@PathVariable @Parameter(description = "ID do setor")  Long id){
+	public ResponseEntity<DepartmentDTO> getDepartment(@PathVariable @Parameter(description = "ID do setor")  UUID id){
 		return ResponseEntity.ok(departmentService.getDepartment(securityUtils.getLoggedUserCompany().getId(), id));
 	}
 	
 	@GetMapping("/{id}/room")
-	public ResponseEntity<Page<RoomDTO>> getRooms(@PathVariable @Parameter(description = "ID do setor")  Long id, @RequestParam(required = false, defaultValue = "") @Parameter(description = "Nome da Sala") String name, @ParameterObject Pageable pageable){
+	public ResponseEntity<Page<RoomDTO>> getRooms(@PathVariable @Parameter(description = "ID do setor")  UUID id, @RequestParam(required = false, defaultValue = "") @Parameter(description = "Nome da Sala") String name, @ParameterObject Pageable pageable){
 		return ResponseEntity.ok(roomService.getRoomByDepartment(securityUtils.getLoggedUserCompany().getId(), id, name, pageable));
 	}
 	
@@ -76,14 +77,14 @@ public class DepartmentController {
 	
 	@PreAuthorize("hasRole('ADMIN')")
 	@PutMapping("/{id}")
-	public ResponseEntity<?> updateDepartment(@RequestBody @Valid DepartmentRegistrationDTO departmentRegistrationDTO, @PathVariable @Parameter(description = "ID do setor") Long id){
+	public ResponseEntity<?> updateDepartment(@RequestBody @Valid DepartmentRegistrationDTO departmentRegistrationDTO, @PathVariable @Parameter(description = "ID do setor") UUID id){
 		departmentService.updateDepartment(securityUtils.getLoggedUserCompany(), departmentRegistrationDTO, id);
 		return ResponseEntity.ok().build();
 	}
 	
 	@PreAuthorize("hasRole('ADMIN')")
 	@DeleteMapping("/{id}")
-	public ResponseEntity<?> deleteDepartment(@PathVariable @Parameter(description = "ID do setor") Long id){
+	public ResponseEntity<?> deleteDepartment(@PathVariable @Parameter(description = "ID do setor") UUID id){
 		departmentService.deleteDepartment(securityUtils.getLoggedUserCompany().getId(), id);
 		return ResponseEntity.ok().build();
 	}

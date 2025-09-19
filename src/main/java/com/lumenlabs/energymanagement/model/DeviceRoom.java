@@ -30,19 +30,15 @@ public class DeviceRoom {
 	@JoinColumn(name = "fk_dispositivo", nullable = false)
 	private Device device;
 
-	@Column(nullable = false)
-	private Integer quantidade;
-
 	@Column(name = "tempo_medio_hora", nullable = false)
 	private Float averageTimeHour;
 
 	public DeviceRoom() {
 	}
 
-	public DeviceRoom(Room room, Device device, Integer quantidade, Float averageTimeHour) {
+	public DeviceRoom(Room room, Device device, Float averageTimeHour) {
 		this.room = room;
 		this.device = device;
-		this.quantidade = quantidade;
 		this.averageTimeHour = averageTimeHour;
 	}
 
@@ -68,14 +64,6 @@ public class DeviceRoom {
 
 	public void setDevice(Device device) {
 		this.device = device;
-	}
-
-	public Integer getQuantidade() {
-		return quantidade;
-	}
-
-	public void setQuantidade(Integer quantidade) {
-		this.quantidade = quantidade;
 	}
 
 	public Float getAverageTimeHour() {

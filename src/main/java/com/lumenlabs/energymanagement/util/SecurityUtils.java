@@ -1,5 +1,7 @@
 package com.lumenlabs.energymanagement.util;
 
+import java.util.UUID;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -32,7 +34,7 @@ public class SecurityUtils {
                 .orElseThrow(() -> new RuntimeException("User not found"));
     }
 
-    public Long getLoggedUserId() {
+    public UUID getLoggedUserId() {
         return getLoggedUser().getId();
     }
 

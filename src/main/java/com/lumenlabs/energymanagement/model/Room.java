@@ -1,6 +1,7 @@
 package com.lumenlabs.energymanagement.model;
 
 import java.util.Objects;
+import java.util.UUID;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -19,8 +20,8 @@ uniqueConstraints = @UniqueConstraint(columnNames = {"nome", "fk_setor"}))
 public class Room {
 
 	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Long id;
+	@GeneratedValue(strategy = GenerationType.AUTO)
+	private UUID id;
 	@Column(name = "nome", nullable = false)
 	private String name;
 	@Column(name = "descricao")
@@ -41,11 +42,11 @@ public class Room {
 		this.department = department;
 	}
 
-	public Long getId() {
+	public UUID getId() {
 		return id;
 	}
 
-	public void setId(Long id) {
+	public void setId(UUID id) {
 		this.id = id;
 	}
 

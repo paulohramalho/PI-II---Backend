@@ -1,5 +1,7 @@
 package com.lumenlabs.energymanagement.service;
 
+import java.util.UUID;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -52,10 +54,10 @@ public class CompanyService {
 	}
 
 	@Transactional
-	public void updateCompanyWithAdmin(@Valid CompanyUpdateDTO dto, Long id) {
+	public void updateCompanyWithAdmin(@Valid CompanyUpdateDTO dto, UUID id) {
 		Company company = companyRepository.findById(id).orElseThrow(
 				() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Empresa não encontrada"));
-		Address address = addressRepository.findById(id).orElseThrow(
+		Address address = addressRepository.findByCompanyId(id).orElseThrow(
 				() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Endereço não encontrado"));
 		companyUpdateMapper.copyToCompany(dto, company);
 		companyRepository.save(company);
@@ -78,16 +80,16 @@ public class CompanyService {
 	}
 
 	@Transactional
-	public void deleteCompanyWithAdmin(Long id) {
+	public void deleteCompanyWithAdmin(UUID id) {
 		if(!companyRepository.existsById(id))
 			throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Empresa não encontrada");
 		companyRepository.deleteById(id);
 	}
 
-	public CompanyDTO getCompany(Long id) {
+	public CompanyDTO getCompany(UUID id) {
 		Company company = companyRepository.findById(id).orElseThrow(
 				() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Empresa não encontrada"));
-		Address address = addressRepository.findById(id).orElseThrow(
+		Address address = addressRepository.findByCompanyId(id).orElseThrow(
 				() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Endereço não encontrado"));
 		return companyMapper.mapToCompanyDTO(company, address);
 	}

@@ -1,16 +1,18 @@
 package com.lumenlabs.energymanagement.dto.room;
 
+import java.util.UUID;
+
 public class RoomDTO {
 
-	private Long id;
+	private UUID id;
 	private String name;
 	private String description;
 
-	public Long getId() {
+	public UUID getId() {
 		return id;
 	}
 
-	public void setId(Long id) {
+	public void setId(UUID id) {
 		this.id = id;
 	}
 

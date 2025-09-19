@@ -1,5 +1,7 @@
 package com.lumenlabs.energymanagement.dto.room;
 
+import java.util.UUID;
+
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
@@ -9,7 +11,7 @@ public class RoomRegistrationDTO {
 	private String name;
 	private String description;
 	@NotNull(message = "ID Setor é obrigatório")
-	private Long departmentId;
+	private UUID departmentId;
 
 	public String getName() {
 		return name;
@@ -27,11 +29,11 @@ public class RoomRegistrationDTO {
 		this.description = description;
 	}
 
-	public Long getDepartmentId() {
+	public UUID getDepartmentId() {
 		return departmentId;
 	}
 
-	public void setDepartmentId(Long departmentId) {
+	public void setDepartmentId(UUID departmentId) {
 		this.departmentId = departmentId;
 	}
 

@@ -1,6 +1,7 @@
 package com.lumenlabs.energymanagement.repository;
 
 import java.util.Optional;
+import java.util.UUID;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -8,10 +9,10 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import com.lumenlabs.energymanagement.model.Department;
 
-public interface DepartmentRepository extends JpaRepository<Department, Long> {
-	Boolean existsByCompanyIdAndName(Long companyId, String name);
-	Page<Department> findAllByCompanyIdAndNameContaining(Long companyId, String name, Pageable pageable);
-	Optional<Department> findByCompanyIdAndId(Long companyId, Long id);
-	boolean existsByCompanyIdAndNameAndIdNot(Long companyId, String name, Long id);
-	boolean existsByCompanyIdAndId(Long companyId, Long departmentId);
+public interface DepartmentRepository extends JpaRepository<Department, UUID> {
+	Boolean existsByCompanyIdAndName(UUID companyId, String name);
+	Page<Department> findAllByCompanyIdAndNameContainingIgnoreCase(UUID companyId, String name, Pageable pageable);
+	Optional<Department> findByCompanyIdAndId(UUID companyId, UUID id);
+	boolean existsByCompanyIdAndNameAndIdNot(UUID companyId, String name, UUID id);
+	boolean existsByCompanyIdAndId(UUID companyId, UUID departmentId);
 }

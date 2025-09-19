@@ -1,5 +1,7 @@
 package com.lumenlabs.energymanagement.service;
 
+import java.util.UUID;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -23,8 +25,8 @@ public class DepartmentService {
 	@Autowired
 	private DepartmentMapper departmentMapper;
 
-	public Page<DepartmentDTO> getAll(Long companyId, String name, Pageable pageable){
-		return departmentRepository.findAllByCompanyIdAndNameContaining(companyId, name, pageable)
+	public Page<DepartmentDTO> getAll(UUID companyId, String name, Pageable pageable){
+		return departmentRepository.findAllByCompanyIdAndNameContainingIgnoreCase(companyId, name, pageable)
 				.map(departmentMapper::mapToDepartmentDTO);
 	}
 
@@ -34,13 +36,13 @@ public class DepartmentService {
 		return departmentRepository.save(departmentMapper.mapToDepartment(departmentRegistrationDTO, company));
 	}
 
-	public DepartmentDTO getDepartment(Long companyId, Long id) {
+	public DepartmentDTO getDepartment(UUID companyId, UUID id) {
 		Department department = departmentRepository.findByCompanyIdAndId(companyId, id)
 				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Setor não encontrado"));
 		return departmentMapper.mapToDepartmentDTO(department);
 	}
 
-	public void updateDepartment(Company company, DepartmentRegistrationDTO departmentRegistrationDTO, Long id) {
+	public void updateDepartment(Company company, DepartmentRegistrationDTO departmentRegistrationDTO, UUID id) {
 		Department department = departmentRepository.findByCompanyIdAndId(company.getId(), id)
 				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Setor não encontrado"));
 		if(departmentRepository.existsByCompanyIdAndNameAndIdNot(company.getId(), departmentRegistrationDTO.getName(), id))
@@ -49,7 +51,7 @@ public class DepartmentService {
 		departmentRepository.save(department);
 	}
 
-	public void deleteDepartment(Long companyId, Long id) {
+	public void deleteDepartment(UUID companyId, UUID id) {
 		Department department = departmentRepository.findByCompanyIdAndId(companyId, id)
 				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Setor não encontrado"));
 		departmentRepository.delete(department);

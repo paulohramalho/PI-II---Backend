@@ -2,6 +2,7 @@ package com.lumenlabs.energymanagement.model.embedded;
 
 import java.io.Serializable;
 import java.util.Objects;
+import java.util.UUID;
 
 import jakarta.persistence.Column;
 
@@ -10,32 +11,32 @@ public class RoomDeviceId implements Serializable {
 	private static final long serialVersionUID = 1L;
 	
     @Column(name = "fk_sala")
-    private Long roomId;
+    private UUID roomId;
 
     @Column(name = "fk_dispositivo")
-    private Long deviceId;
+    private UUID deviceId;
 
 	public RoomDeviceId() {
 	}
 
-	public RoomDeviceId(Long roomId, Long deviceId) {
+	public RoomDeviceId(UUID roomId, UUID deviceId) {
 		this.roomId = roomId;
 		this.deviceId = deviceId;
 	}
 
-	public Long getRoomId() {
+	public UUID getRoomId() {
 		return roomId;
 	}
 
-	public void setRoomId(Long roomId) {
+	public void setRoomId(UUID roomId) {
 		this.roomId = roomId;
 	}
 
-	public Long getDeviceId() {
+	public UUID getDeviceId() {
 		return deviceId;
 	}
 
-	public void setDeviceId(Long deviceId) {
+	public void setDeviceId(UUID deviceId) {
 		this.deviceId = deviceId;
 	}
 

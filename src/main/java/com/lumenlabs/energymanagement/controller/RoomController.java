@@ -1,6 +1,7 @@
 package com.lumenlabs.energymanagement.controller;
 
 import java.net.URI;
+import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -37,7 +38,7 @@ public class RoomController {
 	private SecurityUtils securityUtils;
 	
 	@GetMapping("/{id}")
-	public ResponseEntity<RoomDTO> getRoom(@PathVariable Long id){
+	public ResponseEntity<RoomDTO> getRoom(@PathVariable UUID id){
 		return ResponseEntity.ok(roomService.getRoom(securityUtils.getLoggedUserCompany().getId(), id));
 	}
 	
@@ -57,14 +58,14 @@ public class RoomController {
 
 	@PreAuthorize("hasRole('ADMIN')")
 	@PutMapping("/{id}")
-	public ResponseEntity<?> updateRoom(@RequestBody @Valid RoomUpdateDTO roomUpdateDTO, @PathVariable Long id){
+	public ResponseEntity<?> updateRoom(@RequestBody @Valid RoomUpdateDTO roomUpdateDTO, @PathVariable UUID id){
 		roomService.updateRoom(securityUtils.getLoggedUserCompany(), roomUpdateDTO, id);
 		return ResponseEntity.ok().build();
 	}
 	
 	@PreAuthorize("hasRole('ADMIN')")
 	@DeleteMapping("/{id}")
-	public ResponseEntity<?> deleteRoom(@PathVariable Long id){
+	public ResponseEntity<?> deleteRoom(@PathVariable UUID id){
 		roomService.deleteRoom(securityUtils.getLoggedUserCompany().getId(), id);
 		return ResponseEntity.ok().build();
 	}
