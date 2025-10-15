@@ -20,9 +20,12 @@ public class DeviceRoom {
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO)
 	private UUID id;
-	
+
 	@Column(name = "apelido", length = 100, nullable = false)
 	private String nickname;
+
+	@Column(name = "tempo_medio_hora", nullable = false)
+	private Float averageTimeHour;
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "fk_sala", nullable = false)
@@ -32,8 +35,9 @@ public class DeviceRoom {
 	@JoinColumn(name = "fk_dispositivo", nullable = false)
 	private Device device;
 
-	@Column(name = "tempo_medio_hora", nullable = false)
-	private Float averageTimeHour;
+	@ManyToOne(optional = false, fetch = FetchType.LAZY)
+	@JoinColumn(name = "fk_empresa", nullable = false)
+	private Company company;
 
 	public DeviceRoom() {
 	}
@@ -83,6 +87,14 @@ public class DeviceRoom {
 
 	public void setAverageTimeHour(Float averageTimeHour) {
 		this.averageTimeHour = averageTimeHour;
+	}
+
+	public Company getCompany() {
+		return company;
+	}
+
+	public void setCompany(Company company) {
+		this.company = company;
 	}
 
 	@Override
