@@ -1,21 +1,27 @@
 package com.lumenlabs.energymanagement.mapper.room;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.lumenlabs.energymanagement.dto.room.RoomDTO;
 import com.lumenlabs.energymanagement.dto.room.RoomRegistrationDTO;
 import com.lumenlabs.energymanagement.dto.room.RoomUpdateDTO;
+import com.lumenlabs.energymanagement.mapper.department.DepartmentMapper;
 import com.lumenlabs.energymanagement.model.Department;
 import com.lumenlabs.energymanagement.model.Room;
 
 @Component
 public class RoomMapper {
+	
+	@Autowired
+	private DepartmentMapper departmentMapper;
 
 	public RoomDTO mapToRoomDTO(Room room) {
 		RoomDTO dto = new RoomDTO();
 		dto.setDescription(room.getDescription());
 		dto.setName(room.getName());
 		dto.setId(room.getId());
+		dto.setDepartment(departmentMapper.mapToDepartmentDTO(room.getDepartment()));
 		return dto;
 	}
 

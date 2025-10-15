@@ -23,7 +23,7 @@ public class Device {
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO)
 	private UUID id;
-	@Column(name = "nome", nullable = false)
+	@Column(name = "nome", nullable = false, length = 100)
 	private String name;
 	@Column(name = "potencia", nullable = false, precision = 5, scale = 3)
 	private BigDecimal power;

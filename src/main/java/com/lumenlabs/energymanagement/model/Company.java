@@ -22,9 +22,9 @@ public class Company {
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO)
 	private UUID id;
-	@Column(name = "nome", length = 100, nullable = false)
+	@Column(name = "nome", length = 150, nullable = false)
 	private String name;
-	@Column(name = "razao_social", length = 100, nullable = false)
+	@Column(name = "razao_social", length = 150, nullable = false)
 	private String legalName;
 	@Column(name = "cnpj", length = 20, nullable = false, unique = true)
 	private String cnpj;

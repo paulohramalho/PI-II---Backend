@@ -1,32 +1,34 @@
 package com.lumenlabs.energymanagement.model;
 
 import java.util.Objects;
-
-import com.lumenlabs.energymanagement.model.embedded.RoomDeviceId;
+import java.util.UUID;
 
 import jakarta.persistence.Column;
-import jakarta.persistence.EmbeddedId;
 import jakarta.persistence.Entity;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.MapsId;
-import jakarta.persistence.Table;
 import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
 
 @Table(name = "dispositivo_sala")
 @Entity
 public class DeviceRoom {
 
-	@EmbeddedId
-	private RoomDeviceId id;
+	@Id
+	@GeneratedValue(strategy = GenerationType.AUTO)
+	private UUID id;
+	
+	@Column(name = "apelido", length = 100, nullable = false)
+	private String nickname;
 
 	@ManyToOne(fetch = FetchType.LAZY)
-	@MapsId("roomId")
 	@JoinColumn(name = "fk_sala", nullable = false)
 	private Room room;
 
 	@ManyToOne(fetch = FetchType.EAGER)
-	@MapsId("deviceId")
 	@JoinColumn(name = "fk_dispositivo", nullable = false)
 	private Device device;
 
@@ -36,18 +38,27 @@ public class DeviceRoom {
 	public DeviceRoom() {
 	}
 
-	public DeviceRoom(Room room, Device device, Float averageTimeHour) {
+	public DeviceRoom(String nickname, Room room, Device device, Float averageTimeHour) {
+		this.nickname = nickname;
 		this.room = room;
 		this.device = device;
 		this.averageTimeHour = averageTimeHour;
 	}
 
-	public RoomDeviceId getId() {
+	public UUID getId() {
 		return id;
 	}
 
-	public void setId(RoomDeviceId id) {
+	public void setId(UUID id) {
 		this.id = id;
+	}
+
+	public String getNickname() {
+		return nickname;
+	}
+
+	public void setNickname(String nickname) {
+		this.nickname = nickname;
 	}
 
 	public Room getRoom() {

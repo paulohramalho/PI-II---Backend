@@ -23,15 +23,15 @@ public class Address {
 	@OneToOne(fetch = FetchType.LAZY, optional = false)
 	@JoinColumn(name = "fk_empresa")
 	private Company company;
-	@Column(length = 250, nullable = false)
+	@Column(length = 150, nullable = false)
 	private String logradouro;
 	@Column(name = "numero", nullable = false)
 	private Integer number;
-	@Column(nullable = false)
+	@Column(nullable = false, length = 100)
 	private String bairro;
-	@Column(name = "cep", nullable = false)
+	@Column(name = "cep", nullable = false, length = 8)
 	private String zipCode;
-	@Column(name = "cidade", nullable = false)
+	@Column(name = "cidade", nullable = false, length = 100)
 	private String city;
 	@Column(name = "uf", length = 2, nullable = false)
 	private String uf;

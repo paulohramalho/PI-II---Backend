@@ -68,5 +68,10 @@ public class RoomService {
 				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Sala não encontrado"));
 		roomRepository.delete(room);
 	}
+
+	public Page<RoomDTO> getAll(UUID companyId, String name, Pageable pageable) {
+		return roomRepository.findAllByCompanyIdAndNameContainingIgnoreCase(companyId, name, pageable)
+				.map(roomMapper::mapToRoomDTO);
+	}
 	
 }

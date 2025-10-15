@@ -25,9 +25,9 @@ public class Department {
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO)
 	private UUID id;
-	@Column(name = "nome", nullable = false)
+	@Column(name = "nome", nullable = false, length = 100)
 	private String name;
-	@Column(name = "descricao")
+	@Column(name = "descricao", length = 150)
 	private String description;
 	@ManyToOne(fetch = FetchType.LAZY, optional = false)
 	@JoinColumn(name = "fk_empresa", nullable = false)

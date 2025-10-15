@@ -22,11 +22,11 @@ public class Room {
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO)
 	private UUID id;
-	@Column(name = "nome", nullable = false)
+	@Column(name = "nome", nullable = false, length = 100)
 	private String name;
-	@Column(name = "descricao")
+	@Column(name = "descricao", length = 150)
 	private String description;
-	@ManyToOne(optional = false, fetch = FetchType.LAZY)
+	@ManyToOne(optional = false, fetch = FetchType.EAGER)
 	@JoinColumn(name = "fk_setor", nullable = false)
 	private Department department;
 	@ManyToOne(optional = false, fetch = FetchType.LAZY)

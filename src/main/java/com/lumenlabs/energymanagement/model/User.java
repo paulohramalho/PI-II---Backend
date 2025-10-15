@@ -32,11 +32,11 @@ public class User implements UserDetails {
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO)
 	private UUID id;
-	@Column(name = "nome", nullable = false)
+	@Column(name = "nome", nullable = false, length = 200)
 	private String name;
-	@Column(nullable = false, unique = true, length = 255)
+	@Column(nullable = false, unique = true, length = 150)
 	private String email;
-	@Column(nullable = false, length = 255, name = "senha")
+	@Column(nullable = false, length = 200, name = "senha")
 	private String password;
 	@ManyToOne(optional = false, fetch = FetchType.LAZY)
 	@JoinColumn(name = "fk_empresa")
