@@ -4,7 +4,6 @@ import java.time.LocalDateTime;
 import java.util.Objects;
 import java.util.UUID;
 
-import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -30,7 +29,7 @@ public class Consumption {
 	private float tensao;
 	@Column(name = "potencia_ativa", nullable = false)
 	private float potenciaAtiva;
-	@ManyToOne(optional = false, cascade = CascadeType.REMOVE, fetch = FetchType.LAZY)
+	@ManyToOne(optional = false, fetch = FetchType.LAZY)
 	@JoinColumn(name = "fk_dispositivo_sala", nullable = false)
 	private DeviceRoom deviceRoom;
 
