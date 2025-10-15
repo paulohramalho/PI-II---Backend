@@ -31,18 +31,18 @@ public class Consumption {
 	@Column(name = "potencia_ativa", nullable = false)
 	private float potenciaAtiva;
 	@ManyToOne(optional = false, cascade = CascadeType.REMOVE, fetch = FetchType.LAZY)
-	@JoinColumn(name = "fk_dispositivo", nullable = false)
-	private Device device;
+	@JoinColumn(name = "fk_dispositivo_sala", nullable = false)
+	private DeviceRoom deviceRoom;
 
 	public Consumption() {
 	}
 
-	public Consumption(LocalDateTime eventTime, float corrente, float tensao, float potenciaAtiva, Device device) {
+	public Consumption(LocalDateTime eventTime, float corrente, float tensao, float potenciaAtiva, DeviceRoom deviceRoom) {
 		this.eventTime = eventTime;
 		this.corrente = corrente;
 		this.tensao = tensao;
 		this.potenciaAtiva = potenciaAtiva;
-		this.device = device;
+		this.deviceRoom = deviceRoom;
 	}
 
 	public UUID getId() {
@@ -85,12 +85,12 @@ public class Consumption {
 		this.potenciaAtiva = potenciaAtiva;
 	}
 
-	public Device getDevice() {
-		return device;
+	public DeviceRoom getDevice() {
+		return deviceRoom;
 	}
 
-	public void setDevice(Device device) {
-		this.device = device;
+	public void setDevice(DeviceRoom deviceRoom) {
+		this.deviceRoom = deviceRoom;
 	}
 
 	@Override
