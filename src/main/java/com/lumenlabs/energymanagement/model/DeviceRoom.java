@@ -12,8 +12,10 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 
-@Table(name = "dispositivo_sala")
+@Table(name = "dispositivo_sala",
+	uniqueConstraints = @UniqueConstraint(columnNames = {"apelido", "fk_sala"}))
 @Entity
 public class DeviceRoom {
 

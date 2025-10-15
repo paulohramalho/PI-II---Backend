@@ -16,7 +16,7 @@ import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 
 @Table(name = "dispositivo",
-uniqueConstraints = @UniqueConstraint(columnNames = {"nome", "fk_tipo_dispositivo"}))
+uniqueConstraints = @UniqueConstraint(columnNames = {"nome", "fk_empresa"}))
 @Entity
 public class Device {
 
