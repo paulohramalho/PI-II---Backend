@@ -19,8 +19,6 @@ import com.lumenlabs.energymanagement.model.DeviceType;
 import com.lumenlabs.energymanagement.repository.DeviceRepository;
 import com.lumenlabs.energymanagement.repository.DeviceTypeRepository;
 
-import jakarta.validation.Valid;
-
 @Service
 public class DeviceService {
 	
