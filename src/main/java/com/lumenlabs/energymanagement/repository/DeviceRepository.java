@@ -1,5 +1,6 @@
 package com.lumenlabs.energymanagement.repository;
 
+import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.data.domain.Page;
@@ -28,4 +29,12 @@ public interface DeviceRepository extends JpaRepository<Device, UUID> {
     	Page<Device> findAllByNameAndDeviceType(@Param("name") String name,
     	                                        @Param("deviceTypeId") UUID deviceTypeId,
     	                                        Pageable pageable);
+
+	boolean existsByCompanyIdAndNameIgnoreCase(UUID companyId, String name);
+
+	Optional<Device> findByCompanyIdAndId(UUID companyId, UUID id);
+
+	boolean existsByCompanyIdAndNameIgnoreCaseAndIdNot(UUID companyId, String name, UUID id);
+
+	Page<Device> findAllByCompanyIdAndNameContainingIgnoreCase(UUID companyId, String name, Pageable pageable);
 }

@@ -44,8 +44,8 @@ public class DeviceRoom {
 	public DeviceRoom() {
 	}
 
-	public DeviceRoom(String nickname, Room room, Device device, Float averageTimeHour) {
-		this.alias = nickname;
+	public DeviceRoom(String alias, Room room, Device device, Float averageTimeHour) {
+		this.alias = alias;
 		this.room = room;
 		this.device = device;
 		this.averageTimeHour = averageTimeHour;
@@ -59,12 +59,12 @@ public class DeviceRoom {
 		this.id = id;
 	}
 
-	public String getNickname() {
+	public String getAlias() {
 		return alias;
 	}
 
-	public void setNickname(String nickname) {
-		this.alias = nickname;
+	public void setAlias(String alias) {
+		this.alias = alias;
 	}
 
 	public Room getRoom() {

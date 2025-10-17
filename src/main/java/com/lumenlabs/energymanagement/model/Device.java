@@ -15,8 +15,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 
-@Table(name = "dispositivo",
-uniqueConstraints = @UniqueConstraint(columnNames = {"nome", "fk_empresa"}))
+@Table(name = "dispositivo", uniqueConstraints = @UniqueConstraint(columnNames = { "nome", "fk_empresa" }))
 @Entity
 public class Device {
 
@@ -25,7 +24,7 @@ public class Device {
 	private UUID id;
 	@Column(name = "nome", nullable = false, length = 100)
 	private String name;
-	@Column(name = "potencia", nullable = false, precision = 5, scale = 3)
+	@Column(name = "potencia", nullable = false, precision = 10, scale = 2)
 	private BigDecimal power;
 	@ManyToOne(fetch = FetchType.LAZY, optional = false)
 	@JoinColumn(name = "fk_tipo_dispositivo", nullable = false)
@@ -73,6 +72,14 @@ public class Device {
 
 	public void setDeviceType(DeviceType deviceType) {
 		this.deviceType = deviceType;
+	}
+
+	public Company getCompany() {
+		return company;
+	}
+
+	public void setCompany(Company company) {
+		this.company = company;
 	}
 
 	@Override

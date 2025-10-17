@@ -65,7 +65,7 @@ public class RoomService {
 
 	public void deleteRoom(UUID companyId, UUID id) {
 		Room room = roomRepository.findByCompanyIdAndId(companyId, id)
-				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Sala não encontrado"));
+				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Sala não encontrada"));
 		roomRepository.delete(room);
 	}
 
