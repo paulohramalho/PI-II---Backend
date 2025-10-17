@@ -15,6 +15,7 @@ import com.lumenlabs.energymanagement.dto.security.LoginDTO;
 import com.lumenlabs.energymanagement.dto.security.TokenDTO;
 import com.lumenlabs.energymanagement.service.JWTService;
 
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 
@@ -29,6 +30,7 @@ public class AuthenticationController {
 	@Autowired
 	private JWTService jwtService;
 
+	@Operation(summary = "Realizar Login")
 	@PostMapping
 	public ResponseEntity<TokenDTO> login(@RequestBody @Valid LoginDTO loginDTO) {
 		try {

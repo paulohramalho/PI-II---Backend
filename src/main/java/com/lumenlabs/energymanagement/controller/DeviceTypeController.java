@@ -28,6 +28,7 @@ import com.lumenlabs.energymanagement.model.DeviceType;
 import com.lumenlabs.energymanagement.service.DeviceTypeService;
 import com.lumenlabs.energymanagement.util.SecurityUtils;
 
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -43,17 +44,20 @@ public class DeviceTypeController {
 	@Autowired
 	private SecurityUtils securityUtils;
 	
+	@Operation(summary = "Listagem de todos os Tipos Dispositivos")
 	@GetMapping
 	public ResponseEntity<Page<DeviceTypeDTO>> getAll(@RequestParam(required = false, defaultValue = "") @Parameter(description = "Nome do Setor") String name, 
 			@PageableDefault(sort = "name", direction = Direction.ASC) @ParameterObject Pageable pageable){
 		return ResponseEntity.ok(deviceTypeService.getAll(securityUtils.getLoggedUserCompany().getId(), name, pageable));
 	}
 	
+	@Operation(summary = "Obter informacao do Tipo Dispositivo")
 	@GetMapping("/{id}")
 	public ResponseEntity<DeviceTypeDTO> getDeviceType(@PathVariable @Parameter(description = "ID do setor")  UUID id){
 		return ResponseEntity.ok(deviceTypeService.getDeviceType(securityUtils.getLoggedUserCompany().getId(), id));
 	}
 	
+	@Operation(summary = "Cadastro de Tipo Dispositivo")
 	@PreAuthorize("hasRole('ADMIN')")
 	@PostMapping
 	public ResponseEntity<?> createDeviceType(@RequestBody @Valid DeviceTypeRegistrationDTO deviceTypeRegistrationDTO){
@@ -68,6 +72,7 @@ public class DeviceTypeController {
 	    return ResponseEntity.created(location).build();
 	}
 	
+	@Operation(summary = "Atualizar informacoes do Tipo Dispositivo")
 	@PreAuthorize("hasRole('ADMIN')")
 	@PutMapping("/{id}")
 	public ResponseEntity<?> updateDeviceType(@RequestBody @Valid DeviceTypeRegistrationDTO deviceTypeRegistrationDTO, 
@@ -76,6 +81,7 @@ public class DeviceTypeController {
 		return ResponseEntity.ok().build();
 	}
 	
+	@Operation(summary = "Remover Tipo Dispositivo")
 	@PreAuthorize("hasRole('ADMIN')")
 	@DeleteMapping("/{id}")
 	public ResponseEntity<?> deleteDeviceType(@PathVariable @Parameter(description = "ID do tipo dispositivo") UUID id){

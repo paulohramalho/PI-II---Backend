@@ -24,7 +24,7 @@ public class DeviceRoom {
 	private UUID id;
 
 	@Column(name = "apelido", length = 100, nullable = false)
-	private String nickname;
+	private String alias;
 
 	@Column(name = "tempo_medio_hora", nullable = false)
 	private Float averageTimeHour;
@@ -45,7 +45,7 @@ public class DeviceRoom {
 	}
 
 	public DeviceRoom(String nickname, Room room, Device device, Float averageTimeHour) {
-		this.nickname = nickname;
+		this.alias = nickname;
 		this.room = room;
 		this.device = device;
 		this.averageTimeHour = averageTimeHour;
@@ -60,11 +60,11 @@ public class DeviceRoom {
 	}
 
 	public String getNickname() {
-		return nickname;
+		return alias;
 	}
 
 	public void setNickname(String nickname) {
-		this.nickname = nickname;
+		this.alias = nickname;
 	}
 
 	public Room getRoom() {

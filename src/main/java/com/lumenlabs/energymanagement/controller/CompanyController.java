@@ -18,6 +18,7 @@ import com.lumenlabs.energymanagement.dto.company.CompanyUpdateDTO;
 import com.lumenlabs.energymanagement.service.CompanyService;
 import com.lumenlabs.energymanagement.util.SecurityUtils;
 
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 
@@ -32,17 +33,20 @@ public class CompanyController {
 	@Autowired
 	private SecurityUtils securityUtils;
 	
+	@Operation(summary = "Obter informcoes sobre a empresa")
 	@GetMapping
 	public ResponseEntity<CompanyDTO> getCompany(){
 		return ResponseEntity.ok(companyService.getCompany(securityUtils.getLoggedUserCompany().getId()));
 	}
 	
+	@Operation(summary = "Cadastrar empresa e usuario administrador")
 	@PostMapping
 	public ResponseEntity<?> registerCompanyWithAdmin(@RequestBody @Valid CompanyRegistrationDTO companyRegistrationDTO){
 		companyService.registerCompanyWithAdmin(companyRegistrationDTO);
 		return ResponseEntity.status(HttpStatus.CREATED).build();
 	}
 	
+	@Operation(summary = "Atualizar dados cadastrais da empresa")
 	@PreAuthorize("hasRole('ADMIN')")
 	@PutMapping
 	public ResponseEntity<?> updateCompanyWithAdmin(@RequestBody @Valid CompanyUpdateDTO companyUpdateDTO){
@@ -50,6 +54,7 @@ public class CompanyController {
 		return ResponseEntity.ok().build();
 	}
 	
+	@Operation(summary = "Deletar empresa")
 	@PreAuthorize("hasRole('ADMIN')")
 	@DeleteMapping
 	public ResponseEntity<?> deleteCompanyWithAdmin(){

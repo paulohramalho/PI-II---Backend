@@ -29,6 +29,7 @@ import com.lumenlabs.energymanagement.model.Room;
 import com.lumenlabs.energymanagement.service.RoomService;
 import com.lumenlabs.energymanagement.util.SecurityUtils;
 
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -44,17 +45,20 @@ public class RoomController {
 	@Autowired
 	private SecurityUtils securityUtils;
 	
+	@Operation(summary = "Listagem de todas as Salas")
 	@GetMapping
 	public ResponseEntity<Page<RoomDTO>> getRooms(@RequestParam(required = false, defaultValue = "") @Parameter(description = "Nome da Sala") String name, 
 			@PageableDefault(sort = "name", direction = Direction.ASC) @ParameterObject Pageable pageable){
 		return ResponseEntity.ok(roomService.getAll(securityUtils.getLoggedUserCompany().getId(), name, pageable));
 	}
 	
+	@Operation(summary = "Obter informacao da Sala")
 	@GetMapping("/{id}")
 	public ResponseEntity<RoomDTO> getRoom(@PathVariable UUID id){
 		return ResponseEntity.ok(roomService.getRoom(securityUtils.getLoggedUserCompany().getId(), id));
 	}
 	
+	@Operation(summary = "Cadastro de Sala")
 	@PreAuthorize("hasRole('ADMIN')")
 	@PostMapping
 	public ResponseEntity<?> createRoom(@RequestBody @Valid RoomRegistrationDTO roomRegistrationDTO){
@@ -69,6 +73,7 @@ public class RoomController {
 	    return ResponseEntity.created(location).build();
 	}
 
+	@Operation(summary = "Atualizar informacoes da sala")
 	@PreAuthorize("hasRole('ADMIN')")
 	@PutMapping("/{id}")
 	public ResponseEntity<?> updateRoom(@RequestBody @Valid RoomUpdateDTO roomUpdateDTO, @PathVariable UUID id){
@@ -76,6 +81,7 @@ public class RoomController {
 		return ResponseEntity.ok().build();
 	}
 	
+	@Operation(summary = "Remover Sala")
 	@PreAuthorize("hasRole('ADMIN')")
 	@DeleteMapping("/{id}")
 	public ResponseEntity<?> deleteRoom(@PathVariable UUID id){

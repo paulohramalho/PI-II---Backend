@@ -30,6 +30,7 @@ import com.lumenlabs.energymanagement.service.DepartmentService;
 import com.lumenlabs.energymanagement.service.RoomService;
 import com.lumenlabs.energymanagement.util.SecurityUtils;
 
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -48,11 +49,13 @@ public class DepartmentController {
 	@Autowired
 	private SecurityUtils securityUtils;
 	
+	@Operation(summary = "Obter informcoes sobre o setor")
 	@GetMapping("/{id}")
 	public ResponseEntity<DepartmentDTO> getDepartment(@PathVariable @Parameter(description = "ID do setor")  UUID id){
 		return ResponseEntity.ok(departmentService.getDepartment(securityUtils.getLoggedUserCompany().getId(), id));
 	}
 	
+	@Operation(summary = "Consultar salas atreladas ao setor")
 	@GetMapping("/{id}/room")
 	public ResponseEntity<Page<RoomDTO>> getRooms(@PathVariable @Parameter(description = "ID do setor")  UUID id, 
 			@RequestParam(required = false, defaultValue = "") @Parameter(description = "Nome da Sala") String name, 
@@ -60,12 +63,14 @@ public class DepartmentController {
 		return ResponseEntity.ok(roomService.getRoomByDepartment(securityUtils.getLoggedUserCompany().getId(), id, name, pageable));
 	}
 	
+	@Operation(summary = "Listagem de todos os setores")
 	@GetMapping
 	public ResponseEntity<Page<DepartmentDTO>> getAll(@RequestParam(required = false, defaultValue = "") @Parameter(description = "Nome do Setor") String name, 
 			@PageableDefault(sort = "name", direction = Direction.ASC) @ParameterObject Pageable pageable){
 		return ResponseEntity.ok(departmentService.getAll(securityUtils.getLoggedUserCompany().getId(), name, pageable));
 	}
 	
+	@Operation(summary = "Cadastro de setor")
 	@PreAuthorize("hasRole('ADMIN')")
 	@PostMapping
 	public ResponseEntity<?> createDepartment(@RequestBody @Valid DepartmentRegistrationDTO departmentRegistrationDTO){
@@ -80,6 +85,7 @@ public class DepartmentController {
 	    return ResponseEntity.created(location).build();
 	}
 	
+	@Operation(summary = "Atualizar informacoes sobre o setor")
 	@PreAuthorize("hasRole('ADMIN')")
 	@PutMapping("/{id}")
 	public ResponseEntity<?> updateDepartment(@RequestBody @Valid DepartmentRegistrationDTO departmentRegistrationDTO, @PathVariable @Parameter(description = "ID do setor") UUID id){
@@ -87,6 +93,7 @@ public class DepartmentController {
 		return ResponseEntity.ok().build();
 	}
 	
+	@Operation(summary = "Remover setor")
 	@PreAuthorize("hasRole('ADMIN')")
 	@DeleteMapping("/{id}")
 	public ResponseEntity<?> deleteDepartment(@PathVariable @Parameter(description = "ID do setor") UUID id){
