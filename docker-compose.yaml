@@ -1,0 +1,32 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:16
+    container_name: sage_postgres
+    restart: always
+    environment:
+      POSTGRES_DB: sage
+      POSTGRES_USER: sage
+      POSTGRES_PASSWORD: sage
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  app:
+    build: .
+    container_name: sage_api
+    depends_on:
+      - postgres
+    environment:
+      DB_URL: jdbc:postgresql://postgres:5432/sage
+      DB_USERNAME: sage
+      DB_PASSWORD: sage
+      JWT_ISSUER: lumen-labs
+      JWT_SECRET: qjcI2iW2KcfNbjnwHLSqTLUBiiRar6EI0s4kGhHL2ScW2Z6WrP
+    ports:
+      - "8080:8080"
+
+volumes:
+  postgres_data:
