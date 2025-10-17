@@ -7,6 +7,8 @@ import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort.Direction;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -52,12 +54,15 @@ public class DepartmentController {
 	}
 	
 	@GetMapping("/{id}/room")
-	public ResponseEntity<Page<RoomDTO>> getRooms(@PathVariable @Parameter(description = "ID do setor")  UUID id, @RequestParam(required = false, defaultValue = "") @Parameter(description = "Nome da Sala") String name, @ParameterObject Pageable pageable){
+	public ResponseEntity<Page<RoomDTO>> getRooms(@PathVariable @Parameter(description = "ID do setor")  UUID id, 
+			@RequestParam(required = false, defaultValue = "") @Parameter(description = "Nome da Sala") String name, 
+			@PageableDefault(sort = "name", direction = Direction.ASC) @ParameterObject Pageable pageable){
 		return ResponseEntity.ok(roomService.getRoomByDepartment(securityUtils.getLoggedUserCompany().getId(), id, name, pageable));
 	}
 	
 	@GetMapping
-	public ResponseEntity<Page<DepartmentDTO>> getAll(@RequestParam(required = false, defaultValue = "") @Parameter(description = "Nome do Setor") String name, @ParameterObject Pageable pageable){
+	public ResponseEntity<Page<DepartmentDTO>> getAll(@RequestParam(required = false, defaultValue = "") @Parameter(description = "Nome do Setor") String name, 
+			@PageableDefault(sort = "name", direction = Direction.ASC) @ParameterObject Pageable pageable){
 		return ResponseEntity.ok(departmentService.getAll(securityUtils.getLoggedUserCompany().getId(), name, pageable));
 	}
 	

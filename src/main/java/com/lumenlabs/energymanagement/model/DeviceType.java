@@ -15,20 +15,19 @@ import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 
 @Entity
-@Table(name = "tipo_dispositivo", 
-       uniqueConstraints = @UniqueConstraint(columnNames = {"nome", "fk_empresa"}))
+@Table(name = "tipo_dispositivo", uniqueConstraints = @UniqueConstraint(columnNames = { "nome", "fk_empresa" }))
 public class DeviceType {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    private UUID id;
+	@Id
+	@GeneratedValue(strategy = GenerationType.AUTO)
+	private UUID id;
 
-    @Column(name = "nome", nullable = false, length = 100)
-    private String name;
+	@Column(name = "nome", nullable = false, length = 100)
+	private String name;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "fk_empresa", nullable = false)
-    private Company company;
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "fk_empresa", nullable = false)
+	private Company company;
 
 	public DeviceType() {
 	}
@@ -51,6 +50,14 @@ public class DeviceType {
 
 	public void setName(String name) {
 		this.name = name;
+	}
+
+	public Company getCompany() {
+		return company;
+	}
+
+	public void setCompany(Company company) {
+		this.company = company;
 	}
 
 	@Override

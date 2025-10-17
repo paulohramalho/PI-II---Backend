@@ -22,11 +22,10 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
-import com.lumenlabs.energymanagement.dto.room.RoomDTO;
-import com.lumenlabs.energymanagement.dto.room.RoomRegistrationDTO;
-import com.lumenlabs.energymanagement.dto.room.RoomUpdateDTO;
-import com.lumenlabs.energymanagement.model.Room;
-import com.lumenlabs.energymanagement.service.RoomService;
+import com.lumenlabs.energymanagement.dto.devicetype.DeviceTypeDTO;
+import com.lumenlabs.energymanagement.dto.devicetype.DeviceTypeRegistrationDTO;
+import com.lumenlabs.energymanagement.model.DeviceType;
+import com.lumenlabs.energymanagement.service.DeviceTypeService;
 import com.lumenlabs.energymanagement.util.SecurityUtils;
 
 import io.swagger.v3.oas.annotations.Parameter;
@@ -34,52 +33,54 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 
 @RestController
-@RequestMapping("/api/room")
-@Tag(name = "Sala")
-public class RoomController {
+@RequestMapping("/api/device-type")
+@Tag(name = "Tipo Dispositivo")
+public class DeviceTypeController {
 	
 	@Autowired
-	private RoomService roomService;
+	private DeviceTypeService deviceTypeService;
 	
 	@Autowired
 	private SecurityUtils securityUtils;
 	
 	@GetMapping
-	public ResponseEntity<Page<RoomDTO>> getRooms(@RequestParam(required = false, defaultValue = "") @Parameter(description = "Nome da Sala") String name, 
+	public ResponseEntity<Page<DeviceTypeDTO>> getAll(@RequestParam(required = false, defaultValue = "") @Parameter(description = "Nome do Setor") String name, 
 			@PageableDefault(sort = "name", direction = Direction.ASC) @ParameterObject Pageable pageable){
-		return ResponseEntity.ok(roomService.getAll(securityUtils.getLoggedUserCompany().getId(), name, pageable));
+		return ResponseEntity.ok(deviceTypeService.getAll(securityUtils.getLoggedUserCompany().getId(), name, pageable));
 	}
 	
 	@GetMapping("/{id}")
-	public ResponseEntity<RoomDTO> getRoom(@PathVariable UUID id){
-		return ResponseEntity.ok(roomService.getRoom(securityUtils.getLoggedUserCompany().getId(), id));
+	public ResponseEntity<DeviceTypeDTO> getDeviceType(@PathVariable @Parameter(description = "ID do setor")  UUID id){
+		return ResponseEntity.ok(deviceTypeService.getDeviceType(securityUtils.getLoggedUserCompany().getId(), id));
 	}
 	
 	@PreAuthorize("hasRole('ADMIN')")
 	@PostMapping
-	public ResponseEntity<?> createRoom(@RequestBody @Valid RoomRegistrationDTO roomRegistrationDTO){
-		Room room = roomService.createRoom(securityUtils.getLoggedUserCompany(), roomRegistrationDTO);
+	public ResponseEntity<?> createDeviceType(@RequestBody @Valid DeviceTypeRegistrationDTO deviceTypeRegistrationDTO){
+		DeviceType deviceType = deviceTypeService.create(securityUtils.getLoggedUserCompany(), deviceTypeRegistrationDTO);
 		
 		URI location = ServletUriComponentsBuilder
 	            .fromCurrentRequest()
 	            .path("/{id}")
-	            .buildAndExpand(room.getId())
+	            .buildAndExpand(deviceType.getId())
 	            .toUri();
 
 	    return ResponseEntity.created(location).build();
 	}
-
+	
 	@PreAuthorize("hasRole('ADMIN')")
 	@PutMapping("/{id}")
-	public ResponseEntity<?> updateRoom(@RequestBody @Valid RoomUpdateDTO roomUpdateDTO, @PathVariable UUID id){
-		roomService.updateRoom(securityUtils.getLoggedUserCompany(), roomUpdateDTO, id);
+	public ResponseEntity<?> updateDeviceType(@RequestBody @Valid DeviceTypeRegistrationDTO deviceTypeRegistrationDTO, 
+			@PathVariable @Parameter(description = "ID do tipo dispositivo") UUID id){
+		deviceTypeService.updateDeviceType(securityUtils.getLoggedUserCompany(), deviceTypeRegistrationDTO, id);
 		return ResponseEntity.ok().build();
 	}
 	
 	@PreAuthorize("hasRole('ADMIN')")
 	@DeleteMapping("/{id}")
-	public ResponseEntity<?> deleteRoom(@PathVariable UUID id){
-		roomService.deleteRoom(securityUtils.getLoggedUserCompany().getId(), id);
+	public ResponseEntity<?> deleteDeviceType(@PathVariable @Parameter(description = "ID do tipo dispositivo") UUID id){
+		deviceTypeService.deleteDeviceType(securityUtils.getLoggedUserCompany().getId(), id);
 		return ResponseEntity.ok().build();
 	}
+	
 }

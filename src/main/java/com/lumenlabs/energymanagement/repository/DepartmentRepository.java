@@ -10,9 +10,9 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import com.lumenlabs.energymanagement.model.Department;
 
 public interface DepartmentRepository extends JpaRepository<Department, UUID> {
-	Boolean existsByCompanyIdAndName(UUID companyId, String name);
+	Boolean existsByCompanyIdAndNameIgnoreCase(UUID companyId, String name);
 	Page<Department> findAllByCompanyIdAndNameContainingIgnoreCase(UUID companyId, String name, Pageable pageable);
 	Optional<Department> findByCompanyIdAndId(UUID companyId, UUID id);
-	boolean existsByCompanyIdAndNameAndIdNot(UUID companyId, String name, UUID id);
+	boolean existsByCompanyIdAndNameIgnoreCaseAndIdNot(UUID companyId, String name, UUID id);
 	boolean existsByCompanyIdAndId(UUID companyId, UUID departmentId);
 }

@@ -31,7 +31,7 @@ public class DepartmentService {
 	}
 
 	public Department createDepartment(Company company, DepartmentRegistrationDTO departmentRegistrationDTO) {
-		if(departmentRepository.existsByCompanyIdAndName(company.getId(), departmentRegistrationDTO.getName()))
+		if(departmentRepository.existsByCompanyIdAndNameIgnoreCase(company.getId(), departmentRegistrationDTO.getName()))
 			throw new ResponseStatusException(HttpStatus.CONFLICT, "Setor já existente");
 		return departmentRepository.save(departmentMapper.mapToDepartment(departmentRegistrationDTO, company));
 	}
@@ -45,7 +45,7 @@ public class DepartmentService {
 	public void updateDepartment(Company company, DepartmentRegistrationDTO departmentRegistrationDTO, UUID id) {
 		Department department = departmentRepository.findByCompanyIdAndId(company.getId(), id)
 				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Setor não encontrado"));
-		if(departmentRepository.existsByCompanyIdAndNameAndIdNot(company.getId(), departmentRegistrationDTO.getName(), id))
+		if(departmentRepository.existsByCompanyIdAndNameIgnoreCaseAndIdNot(company.getId(), departmentRegistrationDTO.getName(), id))
 			throw new ResponseStatusException(HttpStatus.CONFLICT, "Setor já existente");
 		departmentMapper.copyToDepartment(departmentRegistrationDTO, department);
 		departmentRepository.save(department);

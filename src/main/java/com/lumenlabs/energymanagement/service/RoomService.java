@@ -41,7 +41,7 @@ public class RoomService {
 	public Room createRoom(Company company, RoomRegistrationDTO roomRegistrationDTO) {
 		Department department = departmentRepository.findByCompanyIdAndId(company.getId(), roomRegistrationDTO.getDepartmentId())
 				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Setor não encontrado"));
-		if(roomRepository.existsByCompanyIdAndDepartmentIdAndName(company.getId(), department.getId(), roomRegistrationDTO.getName()))
+		if(roomRepository.existsByCompanyIdAndDepartmentIdAndNameIgnoreCase(company.getId(), department.getId(), roomRegistrationDTO.getName()))
 			throw new ResponseStatusException(HttpStatus.CONFLICT, "Sala já existente no setor");
 		Room room = roomMapper.mapToRoom(roomRegistrationDTO, department);
 		room.setCompany(company);
@@ -57,7 +57,7 @@ public class RoomService {
 	public void updateRoom(Company company, RoomUpdateDTO roomRegistrationDTO, UUID id) {
 		Room room = roomRepository.findByCompanyIdAndId(company.getId(), id)
 				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Sala não encontrada"));
-		if(roomRepository.existsByCompanyIdAndDepartmentIdAndNameAndIdNot(company.getId(), room.getDepartment().getId(), roomRegistrationDTO.getName(), id))
+		if(roomRepository.existsByCompanyIdAndDepartmentIdAndNameIgnoreCaseAndIdNot(company.getId(), room.getDepartment().getId(), roomRegistrationDTO.getName(), id))
 			throw new ResponseStatusException(HttpStatus.CONFLICT, "Sala já existente");
 		roomMapper.copyToRoom(roomRegistrationDTO, room);
 		roomRepository.save(room);
