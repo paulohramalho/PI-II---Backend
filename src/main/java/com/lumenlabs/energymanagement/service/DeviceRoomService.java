@@ -89,9 +89,9 @@ public class DeviceRoomService {
 	public Page<RoomDTO> getRoomsByDevice(UUID companyId, UUID deviceId, String name, Pageable pageable) {
 	    if (!deviceRepository.existsByCompanyIdAndId(companyId, deviceId))
 	        throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Dispositivo não encontrado");
-	    return deviceRoomRepository.findAllByDeviceIdAndCompanyIdAndRoomNameContainingIgnoreCase(
+	    return roomRepository.findRoomsByDevice(
 	            deviceId, companyId, name, pageable
-	    ).map(deviceRoom -> roomMapper.mapToRoomDTO(deviceRoom.getRoom()));
+	    ).map(roomMapper::mapToRoomDTO);
 	}
 	
 }
