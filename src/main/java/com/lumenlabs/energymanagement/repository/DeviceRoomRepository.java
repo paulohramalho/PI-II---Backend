@@ -23,5 +23,8 @@ public interface DeviceRoomRepository extends JpaRepository<DeviceRoom, UUID> {
 	Page<DeviceRoom> findAllByDeviceIdAndCompanyIdAndRoomNameContainingIgnoreCase(UUID deviceId, UUID companyId,
 			String name, Pageable pageable);
 
+	Page<DeviceRoom> findAllByRoomDepartmentIdAndCompanyIdAndAliasContainingIgnoreCase(UUID roomId, UUID companyId,
+			String alias, Pageable pageable);
+
 }
 

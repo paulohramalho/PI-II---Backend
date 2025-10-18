@@ -24,9 +24,11 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import com.lumenlabs.energymanagement.dto.department.DepartmentDTO;
 import com.lumenlabs.energymanagement.dto.department.DepartmentRegistrationDTO;
+import com.lumenlabs.energymanagement.dto.deviceroom.DeviceRoomDTO;
 import com.lumenlabs.energymanagement.dto.room.RoomDTO;
 import com.lumenlabs.energymanagement.model.Department;
 import com.lumenlabs.energymanagement.service.DepartmentService;
+import com.lumenlabs.energymanagement.service.DeviceRoomService;
 import com.lumenlabs.energymanagement.service.RoomService;
 import com.lumenlabs.energymanagement.util.SecurityUtils;
 
@@ -47,7 +49,18 @@ public class DepartmentController {
 	private RoomService roomService;
 	
 	@Autowired
+	private DeviceRoomService deviceRoomService;
+	
+	@Autowired
 	private SecurityUtils securityUtils;
+	
+	@Operation(summary = "Listagem de todos os dispositivos dentro do setor")
+	@GetMapping("/{id}/device")
+	public ResponseEntity<Page<DeviceRoomDTO>> getDeviceRoomByDepartment(@RequestParam(required = false, defaultValue = "") @Parameter(description = "Apelido da associação") String alias, 
+			@PathVariable UUID id
+			,@PageableDefault(sort = "alias", direction = Direction.ASC) @ParameterObject Pageable pageable){
+		return ResponseEntity.ok(deviceRoomService.getDeviceRoomByDepartment(securityUtils.getLoggedUserCompany().getId(), id, alias, pageable));
+	}
 	
 	@Operation(summary = "Obter informcoes sobre o setor")
 	@GetMapping("/{id}")

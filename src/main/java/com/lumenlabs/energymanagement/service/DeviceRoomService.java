@@ -17,6 +17,7 @@ import com.lumenlabs.energymanagement.model.Company;
 import com.lumenlabs.energymanagement.model.Device;
 import com.lumenlabs.energymanagement.model.DeviceRoom;
 import com.lumenlabs.energymanagement.model.Room;
+import com.lumenlabs.energymanagement.repository.DepartmentRepository;
 import com.lumenlabs.energymanagement.repository.DeviceRepository;
 import com.lumenlabs.energymanagement.repository.DeviceRoomRepository;
 import com.lumenlabs.energymanagement.repository.RoomRepository;
@@ -29,6 +30,9 @@ public class DeviceRoomService {
 	
 	@Autowired
 	private RoomRepository roomRepository;
+	
+	@Autowired
+	private DepartmentRepository departmentRepository;
 	
 	@Autowired
 	private DeviceRepository deviceRepository;
@@ -78,6 +82,13 @@ public class DeviceRoomService {
 		if(!roomRepository.existsByCompanyIdAndId(companyId, roomId))
 			throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Sala não encontrada");
 		return deviceRoomRepository.findAllByRoomIdAndCompanyIdAndAliasContainingIgnoreCase(roomId, companyId, alias, pageable)
+				.map(deviceRoomMapper::mapToDeviceRoomDTO);
+	}
+	
+	public Page<DeviceRoomDTO> getDeviceRoomByDepartment(UUID companyId, UUID departmentId, String alias, Pageable pageable){
+		if(!departmentRepository.existsByCompanyIdAndId(companyId, departmentId))
+			throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Setor não encontrado");
+		return deviceRoomRepository.findAllByRoomDepartmentIdAndCompanyIdAndAliasContainingIgnoreCase(departmentId, companyId, alias, pageable)
 				.map(deviceRoomMapper::mapToDeviceRoomDTO);
 	}
 	
