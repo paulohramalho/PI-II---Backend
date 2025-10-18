@@ -21,6 +21,7 @@ public class Consumption {
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO)
 	private UUID id;
+	@Id
 	@Column(name = "event_time", nullable = false)
 	private LocalDateTime eventTime;
 	@Column(nullable = false)
@@ -36,7 +37,8 @@ public class Consumption {
 	public Consumption() {
 	}
 
-	public Consumption(LocalDateTime eventTime, float corrente, float tensao, float potenciaAtiva, DeviceRoom deviceRoom) {
+	public Consumption(LocalDateTime eventTime, float corrente, float tensao, float potenciaAtiva,
+			DeviceRoom deviceRoom) {
 		this.eventTime = eventTime;
 		this.corrente = corrente;
 		this.tensao = tensao;

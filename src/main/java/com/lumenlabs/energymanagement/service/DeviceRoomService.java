@@ -61,7 +61,7 @@ public class DeviceRoomService {
 	public void updateDeviceRoom(Company company, DeviceRoomUpdateDTO deviceRoomUpdateDTO, UUID id) {
 		DeviceRoom deviceRoom = deviceRoomRepository.findByCompanyIdAndId(company.getId(), id)
 				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Associação entre dispositivo e sala não encontrada"));
-		if(deviceRoomRepository.existsByCompanyIdAndRoomIdAndAliasIgnoreCase(company.getId(), deviceRoom.getRoom().getId(), deviceRoomUpdateDTO.getAlias()))
+		if(deviceRoomRepository.existsByCompanyIdAndRoomIdAndAliasIgnoreCaseAndIdNot(company.getId(), deviceRoom.getRoom().getId(), deviceRoomUpdateDTO.getAlias(), deviceRoom.getId()))
 			throw new ResponseStatusException(HttpStatus.CONFLICT, "Apelido já existente na sala");
 		deviceRoomMapper.copyToDeviceRoom(deviceRoomUpdateDTO, deviceRoom);
 		deviceRoomRepository.save(deviceRoom);

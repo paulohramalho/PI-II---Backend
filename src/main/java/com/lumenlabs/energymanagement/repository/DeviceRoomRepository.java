@@ -10,8 +10,10 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import com.lumenlabs.energymanagement.model.DeviceRoom;
 
 public interface DeviceRoomRepository extends JpaRepository<DeviceRoom, UUID> {
-
+	
 	boolean existsByCompanyIdAndRoomIdAndAliasIgnoreCase(UUID companyId, UUID roomId, String alias);
+
+	boolean existsByCompanyIdAndRoomIdAndAliasIgnoreCaseAndIdNot(UUID companyId, UUID roomId, String alias, UUID id);
 
 	Optional<DeviceRoom> findByCompanyIdAndId(UUID companyId, UUID id);
 
