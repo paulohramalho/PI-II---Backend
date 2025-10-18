@@ -15,12 +15,16 @@ import com.lumenlabs.energymanagement.mapper.department.DepartmentMapper;
 import com.lumenlabs.energymanagement.model.Company;
 import com.lumenlabs.energymanagement.model.Department;
 import com.lumenlabs.energymanagement.repository.DepartmentRepository;
+import com.lumenlabs.energymanagement.repository.DeviceRepository;
 
 @Service
 public class DepartmentService {
 
 	@Autowired
 	private DepartmentRepository departmentRepository;
+	
+	@Autowired
+	private DeviceRepository deviceRepository;
 
 	@Autowired
 	private DepartmentMapper departmentMapper;
@@ -55,6 +59,14 @@ public class DepartmentService {
 		Department department = departmentRepository.findByCompanyIdAndId(companyId, id)
 				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Setor não encontrado"));
 		departmentRepository.delete(department);
+	}
+	
+	public Page<DepartmentDTO> getDepartmentsByDevice(UUID companyId, UUID deviceId, String name, Pageable pageable) {
+	    if (!deviceRepository.existsByCompanyIdAndId(companyId, deviceId))
+	        throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Dispositivo não encontrado");
+	    return departmentRepository.findDepartmentsByDevice(
+	            deviceId, companyId, name, pageable
+	    ).map(departmentMapper::mapToDepartmentDTO);
 	}
 
 }

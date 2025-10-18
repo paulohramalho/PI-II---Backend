@@ -17,6 +17,7 @@ import com.lumenlabs.energymanagement.model.Company;
 import com.lumenlabs.energymanagement.model.Department;
 import com.lumenlabs.energymanagement.model.Room;
 import com.lumenlabs.energymanagement.repository.DepartmentRepository;
+import com.lumenlabs.energymanagement.repository.DeviceRepository;
 import com.lumenlabs.energymanagement.repository.RoomRepository;
 
 @Service
@@ -27,6 +28,9 @@ public class RoomService {
 	
 	@Autowired
 	private DepartmentRepository departmentRepository;
+	
+	@Autowired
+	private DeviceRepository deviceRepository;
 
 	@Autowired
 	private RoomMapper roomMapper;
@@ -72,6 +76,14 @@ public class RoomService {
 	public Page<RoomDTO> getAll(UUID companyId, String name, Pageable pageable) {
 		return roomRepository.findAllByCompanyIdAndNameContainingIgnoreCase(companyId, name, pageable)
 				.map(roomMapper::mapToRoomDTO);
+	}
+	
+	public Page<RoomDTO> getRoomsByDevice(UUID companyId, UUID deviceId, String name, Pageable pageable) {
+	    if (!deviceRepository.existsByCompanyIdAndId(companyId, deviceId))
+	        throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Dispositivo não encontrado");
+	    return roomRepository.findRoomsByDevice(
+	            deviceId, companyId, name, pageable
+	    ).map(roomMapper::mapToRoomDTO);
 	}
 	
 }

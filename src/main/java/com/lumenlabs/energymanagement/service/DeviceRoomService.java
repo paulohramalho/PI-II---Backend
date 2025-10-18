@@ -12,9 +12,7 @@ import org.springframework.web.server.ResponseStatusException;
 import com.lumenlabs.energymanagement.dto.deviceroom.DeviceRoomDTO;
 import com.lumenlabs.energymanagement.dto.deviceroom.DeviceRoomRegistrationDTO;
 import com.lumenlabs.energymanagement.dto.deviceroom.DeviceRoomUpdateDTO;
-import com.lumenlabs.energymanagement.dto.room.RoomDTO;
 import com.lumenlabs.energymanagement.mapper.deviceroom.DeviceRoomMapper;
-import com.lumenlabs.energymanagement.mapper.room.RoomMapper;
 import com.lumenlabs.energymanagement.model.Company;
 import com.lumenlabs.energymanagement.model.Device;
 import com.lumenlabs.energymanagement.model.DeviceRoom;
@@ -37,9 +35,6 @@ public class DeviceRoomService {
 
 	@Autowired
 	private DeviceRoomMapper deviceRoomMapper;
-	
-	@Autowired
-	private RoomMapper roomMapper;
 
 	public DeviceRoom createDeviceRoom(Company company, DeviceRoomRegistrationDTO deviceRoomRegistrationDTO) {
 		Room room = roomRepository.findByCompanyIdAndId(company.getId(), deviceRoomRegistrationDTO.getRoomId())
@@ -84,14 +79,6 @@ public class DeviceRoomService {
 			throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Sala não encontrada");
 		return deviceRoomRepository.findAllByRoomIdAndCompanyIdAndAliasContainingIgnoreCase(roomId, companyId, alias, pageable)
 				.map(deviceRoomMapper::mapToDeviceRoomDTO);
-	}
-	
-	public Page<RoomDTO> getRoomsByDevice(UUID companyId, UUID deviceId, String name, Pageable pageable) {
-	    if (!deviceRepository.existsByCompanyIdAndId(companyId, deviceId))
-	        throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Dispositivo não encontrado");
-	    return roomRepository.findRoomsByDevice(
-	            deviceId, companyId, name, pageable
-	    ).map(roomMapper::mapToRoomDTO);
 	}
 	
 }

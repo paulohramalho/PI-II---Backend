@@ -22,13 +22,15 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+import com.lumenlabs.energymanagement.dto.department.DepartmentDTO;
 import com.lumenlabs.energymanagement.dto.device.DeviceDTO;
 import com.lumenlabs.energymanagement.dto.device.DeviceRegistrationDTO;
 import com.lumenlabs.energymanagement.dto.device.DeviceUpdateDTO;
 import com.lumenlabs.energymanagement.dto.room.RoomDTO;
 import com.lumenlabs.energymanagement.model.Device;
-import com.lumenlabs.energymanagement.service.DeviceRoomService;
+import com.lumenlabs.energymanagement.service.DepartmentService;
 import com.lumenlabs.energymanagement.service.DeviceService;
+import com.lumenlabs.energymanagement.service.RoomService;
 import com.lumenlabs.energymanagement.util.SecurityUtils;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -45,7 +47,10 @@ public class DeviceController {
 	private DeviceService deviceService;
 	
 	@Autowired
-	private DeviceRoomService deviceRoomService;
+	private RoomService roomService;
+	
+	@Autowired
+	private DepartmentService departmentService;
 	
 	@Autowired
 	private SecurityUtils securityUtils;
@@ -55,7 +60,15 @@ public class DeviceController {
 	public ResponseEntity<Page<RoomDTO>> getRoomsByDevice(@RequestParam(required = false, defaultValue = "") @Parameter(description = "Nome da sala") String name, 
 			@PathVariable UUID id
 			,@PageableDefault(sort = "name", direction = Direction.ASC) @ParameterObject Pageable pageable){
-		return ResponseEntity.ok(deviceRoomService.getRoomsByDevice(securityUtils.getLoggedUserCompany().getId(), id, name, pageable));
+		return ResponseEntity.ok(roomService.getRoomsByDevice(securityUtils.getLoggedUserCompany().getId(), id, name, pageable));
+	}
+	
+	@Operation(summary = "Listagem de todos os setores que contenham o dispositivo")
+	@GetMapping("/{id}/department")
+	public ResponseEntity<Page<DepartmentDTO>> getDepartmentsByDevice(@RequestParam(required = false, defaultValue = "") @Parameter(description = "Nome do setor") String name, 
+			@PathVariable UUID id
+			,@PageableDefault(sort = "name", direction = Direction.ASC) @ParameterObject Pageable pageable){
+		return ResponseEntity.ok(departmentService.getDepartmentsByDevice(securityUtils.getLoggedUserCompany().getId(), id, name, pageable));
 	}
 	
 	@Operation(summary = "Listagem de todos os Dispositivos")
