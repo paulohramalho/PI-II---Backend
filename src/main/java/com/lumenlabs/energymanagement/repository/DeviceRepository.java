@@ -37,4 +37,7 @@ public interface DeviceRepository extends JpaRepository<Device, UUID> {
 	boolean existsByCompanyIdAndNameIgnoreCaseAndIdNot(UUID companyId, String name, UUID id);
 
 	Page<Device> findAllByCompanyIdAndNameContainingIgnoreCase(UUID companyId, String name, Pageable pageable);
+
+	Page<Device> findAllByDeviceTypeIdAndCompanyIdAndNameContainingIgnoreCase(UUID deviceTypeId, UUID companyId,
+			String name, Pageable pageable);
 }

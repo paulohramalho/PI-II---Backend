@@ -18,4 +18,6 @@ public interface DeviceTypeRepository extends JpaRepository<DeviceType, UUID> {
 	Optional<DeviceType> findByCompanyIdAndId(UUID companyId, UUID deviceTypeId);
 
 	boolean existsByCompanyIdAndNameIgnoreCaseAndIdNot(UUID companyId, String name, UUID id);
+
+	boolean existsByCompanyIdAndId(UUID companyId, UUID deviceTypeId);
 }

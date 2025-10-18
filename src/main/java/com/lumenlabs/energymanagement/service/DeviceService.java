@@ -66,5 +66,12 @@ public class DeviceService {
 		return deviceRepository.findAllByCompanyIdAndNameContainingIgnoreCase(companyId, name, pageable)
 				.map(deviceMapper::mapToDeviceDTO);
 	}
+	
+	public Page<DeviceDTO> getDeviceByDeviceType(UUID companyId, UUID deviceTypeId, String name, Pageable pageable){
+		if(!deviceTypeRepository.existsByCompanyIdAndId(companyId, deviceTypeId))
+			throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Tipo Dispositivo não encontrado");
+		return deviceRepository.findAllByDeviceTypeIdAndCompanyIdAndNameContainingIgnoreCase(deviceTypeId, companyId, name, pageable)
+				.map(deviceMapper::mapToDeviceDTO);
+	}
 
 }

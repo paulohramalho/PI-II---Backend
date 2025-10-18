@@ -1,0 +1,12 @@
+package com.lumenlabs.energymanagement.controller;
+
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+@RestController
+@RequestMapping("/api/device-room")
+public class DeviceRoomController {
+	
+	
+	
+}
