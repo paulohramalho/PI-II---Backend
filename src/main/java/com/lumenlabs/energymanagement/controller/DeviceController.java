@@ -25,7 +25,9 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import com.lumenlabs.energymanagement.dto.device.DeviceDTO;
 import com.lumenlabs.energymanagement.dto.device.DeviceRegistrationDTO;
 import com.lumenlabs.energymanagement.dto.device.DeviceUpdateDTO;
+import com.lumenlabs.energymanagement.dto.room.RoomDTO;
 import com.lumenlabs.energymanagement.model.Device;
+import com.lumenlabs.energymanagement.service.DeviceRoomService;
 import com.lumenlabs.energymanagement.service.DeviceService;
 import com.lumenlabs.energymanagement.util.SecurityUtils;
 
@@ -43,7 +45,18 @@ public class DeviceController {
 	private DeviceService deviceService;
 	
 	@Autowired
+	private DeviceRoomService deviceRoomService;
+	
+	@Autowired
 	private SecurityUtils securityUtils;
+	
+	@Operation(summary = "Listagem de todas as salas associadas ao dispositivo")
+	@GetMapping("/{id}/room")
+	public ResponseEntity<Page<RoomDTO>> getRoomsByDevice(@RequestParam(required = false, defaultValue = "") @Parameter(description = "Nome da sala") String name, 
+			@PathVariable UUID id
+			,@PageableDefault(sort = "alias", direction = Direction.ASC) @ParameterObject Pageable pageable){
+		return ResponseEntity.ok(deviceRoomService.getRoomsByDevice(securityUtils.getLoggedUserCompany().getId(), id, name, pageable));
+	}
 	
 	@Operation(summary = "Listagem de todos os Dispositivos")
 	@GetMapping

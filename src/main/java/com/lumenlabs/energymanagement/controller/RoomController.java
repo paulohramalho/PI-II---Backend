@@ -22,10 +22,12 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+import com.lumenlabs.energymanagement.dto.deviceroom.DeviceRoomDTO;
 import com.lumenlabs.energymanagement.dto.room.RoomDTO;
 import com.lumenlabs.energymanagement.dto.room.RoomRegistrationDTO;
 import com.lumenlabs.energymanagement.dto.room.RoomUpdateDTO;
 import com.lumenlabs.energymanagement.model.Room;
+import com.lumenlabs.energymanagement.service.DeviceRoomService;
 import com.lumenlabs.energymanagement.service.RoomService;
 import com.lumenlabs.energymanagement.util.SecurityUtils;
 
@@ -43,7 +45,18 @@ public class RoomController {
 	private RoomService roomService;
 	
 	@Autowired
+	private DeviceRoomService deviceRoomService;
+	
+	@Autowired
 	private SecurityUtils securityUtils;
+	
+	@Operation(summary = "Listagem de todos os dispositivos vínculados a sala")
+	@GetMapping("/{id}/device")
+	public ResponseEntity<Page<DeviceRoomDTO>> getDeviceRoomByRoom(@RequestParam(required = false, defaultValue = "") @Parameter(description = "Apelido da associação") String alias, 
+			@PathVariable UUID id
+			,@PageableDefault(sort = "alias", direction = Direction.ASC) @ParameterObject Pageable pageable){
+		return ResponseEntity.ok(deviceRoomService.getDeviceRoomByRoom(securityUtils.getLoggedUserCompany().getId(), id, alias, pageable));
+	}
 	
 	@Operation(summary = "Listagem de todas as Salas")
 	@GetMapping
