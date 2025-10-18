@@ -54,7 +54,7 @@ public class DeviceController {
 	@GetMapping("/{id}/room")
 	public ResponseEntity<Page<RoomDTO>> getRoomsByDevice(@RequestParam(required = false, defaultValue = "") @Parameter(description = "Nome da sala") String name, 
 			@PathVariable UUID id
-			,@PageableDefault(sort = "alias", direction = Direction.ASC) @ParameterObject Pageable pageable){
+			,@PageableDefault(sort = "room.name", direction = Direction.ASC) @ParameterObject Pageable pageable){
 		return ResponseEntity.ok(deviceRoomService.getRoomsByDevice(securityUtils.getLoggedUserCompany().getId(), id, name, pageable));
 	}
 	
