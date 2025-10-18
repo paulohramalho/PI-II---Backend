@@ -22,4 +22,6 @@ public interface RoomRepository extends JpaRepository<Room, UUID> {
 	boolean existsByCompanyIdAndDepartmentIdAndNameIgnoreCase(UUID companyId, UUID departmentId, String name);
 
 	Page<Room> findAllByCompanyIdAndNameContainingIgnoreCase(UUID companyId, String name, Pageable pageable);
+
+	boolean existsByCompanyIdAndId(UUID companyId, UUID roomId);
 }
