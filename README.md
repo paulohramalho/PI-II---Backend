@@ -15,14 +15,15 @@ SAGE é uma aplicação desenvolvida em **Java Spring Boot** para análise e ger
 
 ## Tecnologias Utilizadas
 
-| Tecnologia                  | Descrição                   |
-| --------------------------- | --------------------------- |
-| **Java 21**                 | Linguagem principal         |
-| **Spring Boot**             | Framework backend           |
-| **PostgreSQL 16**           | Banco de dados              |
-| **Maven**                   | Gerenciador de dependências |
-| **Docker & Docker Compose** | Containerização             |
-| **Spring Security / JWT**   | Autenticação                |
+| Tecnologia                  | Descrição                                                   |
+| --------------------------- | ------------------------------------------------------------|
+| **Java 21**                 | Linguagem principal                                         |
+| **Spring Boot**             | Framework backend                                           |
+| **PostgreSQL 16**           | Banco de dados                                              |
+| **TimescaleDB**             | Extensão para séries temporais e otimização de consultas    |
+| **Maven**                   | Gerenciador de dependências                                 |
+| **Docker & Docker Compose** | Containerização                                             |
+| **Spring Security / JWT**   | Autenticação                                                |
 
 ## Docker - Como Executar
 

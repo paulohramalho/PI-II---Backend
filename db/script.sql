@@ -157,7 +157,7 @@ CREATE INDEX IF NOT EXISTS idx_dispositivo_sala_empresa
     ON dispositivo_sala (fk_empresa);
 
 -- ========================================
--- CONFIGURAR COMPRESSÃO (dados > 30 dias)
+-- CONFIGURAR COMPRESSÃO
 -- ========================================
 ALTER TABLE consumo SET (
     timescaledb.compress,
@@ -170,98 +170,14 @@ SELECT add_compression_policy('consumo', INTERVAL '30 days');
 -- ========================================
 -- CONFIGURAR CHUNK TIME INTERVAL
 -- ========================================
-SELECT set_chunk_time_interval('consumo', INTERVAL '7 days');
+SELECT set_chunk_time_interval('consumo', INTERVAL '14 days');
 
 -- ========================================
--- CONSUMO DIÁRIO POR DISPOSITIVO-SALA (com fk_empresa)
+-- VIEWS HORARIAS
 -- ========================================
-DROP MATERIALIZED VIEW IF EXISTS consumo_daily_device_room CASCADE;
-
-CREATE MATERIALIZED VIEW IF NOT EXISTS consumo_daily_device_room
-WITH (timescaledb.continuous) AS
-SELECT
-    time_bucket('1 day', c.event_time) AS day,
-    ds.fk_empresa,
-    c.fk_dispositivo_sala,
-    SUM(c.potencia_ativa) AS total_potencia,
-    AVG(c.potencia_ativa) AS avg_potencia,
-    MAX(c.potencia_ativa) AS max_potencia,
-    MIN(c.potencia_ativa) AS min_potencia,
-    COUNT(*) AS total_leituras
-FROM consumo c
-JOIN dispositivo_sala ds ON c.fk_dispositivo_sala = ds.id
-GROUP BY day, ds.fk_empresa, c.fk_dispositivo_sala
-WITH NO DATA;
-
-CREATE INDEX IF NOT EXISTS idx_consumo_daily_device_room_empresa_day
-    ON consumo_daily_device_room (fk_empresa, day DESC);
-
-SELECT add_continuous_aggregate_policy('consumo_daily_device_room',
-    start_offset => INTERVAL '3 days',
-    end_offset => INTERVAL '1 day',
-    schedule_interval => INTERVAL '1 hour');
 
 -- ========================================
--- CONSUMO DIÁRIO POR SALA (com fk_empresa)
--- ========================================
-DROP MATERIALIZED VIEW IF EXISTS consumo_daily_room CASCADE;
-
-CREATE MATERIALIZED VIEW IF NOT EXISTS consumo_daily_room
-WITH (timescaledb.continuous) AS
-SELECT
-    time_bucket('1 day', c.event_time) AS day,
-    ds.fk_empresa,
-    ds.fk_sala,
-    SUM(c.potencia_ativa) AS total_potencia,
-    AVG(c.potencia_ativa) AS avg_potencia,
-    MAX(c.potencia_ativa) AS max_potencia,
-    MIN(c.potencia_ativa) AS min_potencia
-FROM consumo c
-JOIN dispositivo_sala ds ON c.fk_dispositivo_sala = ds.id
-GROUP BY day, ds.fk_empresa, ds.fk_sala
-WITH NO DATA;
-
-CREATE INDEX IF NOT EXISTS idx_consumo_daily_room_empresa_day
-    ON consumo_daily_room (fk_empresa, day DESC);
-
-SELECT add_continuous_aggregate_policy('consumo_daily_room',
-    start_offset => INTERVAL '3 days',
-    end_offset => INTERVAL '1 day',
-    schedule_interval => INTERVAL '1 hour');
-
--- ========================================
--- CONSUMO DIÁRIO POR SETOR (com fk_empresa)
--- ========================================
-DROP MATERIALIZED VIEW IF EXISTS consumo_daily_department CASCADE;
-
-CREATE MATERIALIZED VIEW IF NOT EXISTS consumo_daily_department
-WITH (timescaledb.continuous) AS
-SELECT
-    time_bucket('1 day', c.event_time) AS day,
-    e.id AS fk_empresa,
-    s.id AS fk_setor,
-    SUM(c.potencia_ativa) AS total_potencia,
-    AVG(c.potencia_ativa) AS avg_potencia,
-    MAX(c.potencia_ativa) AS max_potencia,
-    MIN(c.potencia_ativa) AS min_potencia
-FROM consumo c
-JOIN dispositivo_sala ds ON c.fk_dispositivo_sala = ds.id
-JOIN sala s ON ds.fk_sala = s.id
-JOIN setor se ON s.fk_setor = se.id
-JOIN empresa e ON se.fk_empresa = e.id
-GROUP BY day, e.id, s.id
-WITH NO DATA;
-
-CREATE INDEX IF NOT EXISTS idx_consumo_daily_department_empresa_day
-    ON consumo_daily_department (fk_empresa, day DESC);
-
-SELECT add_continuous_aggregate_policy('consumo_daily_department',
-    start_offset => INTERVAL '3 days',
-    end_offset => INTERVAL '1 day',
-    schedule_interval => INTERVAL '1 hour');
-
--- ========================================
--- CONSUMO HORÁRIO POR DISPOSITIVO-SALA (tempo real - com fk_empresa)
+-- CONSUMO HORÁRIO POR DISPOSITIVO-SALA
 -- ========================================
 DROP MATERIALIZED VIEW IF EXISTS consumo_hourly_device_room CASCADE;
 
@@ -289,7 +205,7 @@ SELECT add_continuous_aggregate_policy('consumo_hourly_device_room',
     schedule_interval => INTERVAL '30 minutes');
 
 -- ========================================
--- CONSUMO HORÁRIO POR SALA (tempo real - com fk_empresa)
+-- CONSUMO HORÁRIO POR SALA
 -- ========================================
 DROP MATERIALIZED VIEW IF EXISTS consumo_hourly_room CASCADE;
 
@@ -318,7 +234,7 @@ SELECT add_continuous_aggregate_policy('consumo_hourly_room',
     schedule_interval => INTERVAL '30 minutes');
 
 -- ========================================
--- CONSUMO HORÁRIO POR SETOR (tempo real - com fk_empresa)
+-- CONSUMO HORÁRIO POR SETOR
 -- ========================================
 DROP MATERIALIZED VIEW IF EXISTS consumo_hourly_department CASCADE;
 
@@ -348,3 +264,261 @@ SELECT add_continuous_aggregate_policy('consumo_hourly_department',
     start_offset => INTERVAL '48 hours',
     end_offset => INTERVAL '1 hour',
     schedule_interval => INTERVAL '30 minutes');
+
+-- ========================================
+-- VIEWS DIARIAS
+-- ========================================    
+    
+-- ========================================
+-- CONSUMO DIÁRIO POR DISPOSITIVO-SALA
+-- ========================================
+DROP MATERIALIZED VIEW IF EXISTS consumo_daily_device_room CASCADE;
+
+CREATE MATERIALIZED VIEW IF NOT EXISTS consumo_daily_device_room
+WITH (timescaledb.continuous) AS
+SELECT
+    time_bucket('1 day', hour) AS day,
+    fk_empresa,
+    fk_dispositivo_sala,
+    SUM(total_potencia) AS total_potencia,
+    AVG(avg_potencia) AS avg_potencia,
+    MAX(max_potencia) AS max_potencia,
+    MIN(min_potencia) AS min_potencia,
+    SUM(1) AS total_leituras
+FROM consumo_hourly_device_room
+GROUP BY time_bucket('1 day', hour), fk_empresa, fk_dispositivo_sala
+WITH NO DATA;
+
+CREATE INDEX IF NOT EXISTS idx_consumo_daily_device_room_empresa_day
+    ON consumo_daily_device_room (fk_empresa, day DESC);
+
+SELECT add_continuous_aggregate_policy('consumo_daily_device_room',
+    start_offset => INTERVAL '3 days',
+    end_offset => INTERVAL '1 day',
+    schedule_interval => INTERVAL '1 hour');
+
+-- ========================================
+-- CONSUMO DIÁRIO POR SALA
+-- ========================================
+DROP MATERIALIZED VIEW IF EXISTS consumo_daily_room CASCADE;
+
+CREATE MATERIALIZED VIEW IF NOT EXISTS consumo_daily_room
+WITH (timescaledb.continuous) AS
+SELECT
+    time_bucket('1 day', hour) AS day,
+    fk_empresa,
+    fk_sala,
+    SUM(total_potencia) AS total_potencia,
+    AVG(avg_potencia) AS avg_potencia,
+    MAX(max_potencia) AS max_potencia,
+    MIN(min_potencia) AS min_potencia
+FROM consumo_hourly_room
+GROUP BY time_bucket('1 day', hour), fk_empresa, fk_sala
+WITH NO DATA;
+
+CREATE INDEX IF NOT EXISTS idx_consumo_daily_room_empresa_day
+    ON consumo_daily_room (fk_empresa, day DESC);
+
+SELECT add_continuous_aggregate_policy('consumo_daily_room',
+    start_offset => INTERVAL '3 days',
+    end_offset => INTERVAL '1 day',
+    schedule_interval => INTERVAL '1 hour');
+
+-- ========================================
+-- CONSUMO DIÁRIO POR SETOR
+-- ========================================
+DROP MATERIALIZED VIEW IF EXISTS consumo_daily_department CASCADE;
+
+CREATE MATERIALIZED VIEW IF NOT EXISTS consumo_daily_department
+WITH (timescaledb.continuous) AS
+SELECT
+    time_bucket('1 day', hour) AS day,
+    fk_empresa,
+    fk_setor,
+    SUM(total_potencia) AS total_potencia,
+    AVG(avg_potencia) AS avg_potencia,
+    MAX(max_potencia) AS max_potencia,
+    MIN(min_potencia) AS min_potencia
+FROM consumo_hourly_department
+GROUP BY time_bucket('1 day', hour), fk_empresa, fk_setor
+WITH NO DATA;
+
+CREATE INDEX IF NOT EXISTS idx_consumo_daily_department_empresa_day
+    ON consumo_daily_department (fk_empresa, day DESC);
+
+SELECT add_continuous_aggregate_policy('consumo_daily_department',
+    start_offset => INTERVAL '3 days',
+    end_offset => INTERVAL '1 day',
+    schedule_interval => INTERVAL '1 hour');
+    
+-- ========================================
+-- VIEWS SEMANAIS
+-- ========================================
+
+-- ========================================
+-- CONSUMO SEMANAL POR DISPOSITIVO-SALA
+-- ========================================
+DROP MATERIALIZED VIEW IF EXISTS consumo_weekly_device_room CASCADE;
+
+CREATE MATERIALIZED VIEW IF NOT EXISTS consumo_weekly_device_room
+WITH (timescaledb.continuous) AS
+SELECT
+    time_bucket('1 week', day) AS week,
+    fk_empresa,
+    fk_dispositivo_sala,
+    SUM(total_potencia) AS total_potencia,
+    AVG(avg_potencia) AS avg_potencia,
+    MAX(max_potencia) AS max_potencia,
+    MIN(min_potencia) AS min_potencia,
+    SUM(total_leituras) AS total_leituras
+FROM consumo_daily_device_room
+GROUP BY time_bucket('1 week', day), fk_empresa, fk_dispositivo_sala
+WITH NO DATA;
+
+CREATE INDEX IF NOT EXISTS idx_consumo_weekly_device_room_empresa_week
+    ON consumo_weekly_device_room (fk_empresa, week DESC);
+
+SELECT add_continuous_aggregate_policy('consumo_weekly_device_room',
+    start_offset => INTERVAL '4 weeks',
+    end_offset => INTERVAL '1 week',
+    schedule_interval => INTERVAL '6 hours');
+
+-- ========================================
+-- CONSUMO SEMANAL POR SALA
+-- ========================================
+DROP MATERIALIZED VIEW IF EXISTS consumo_weekly_room CASCADE;
+
+CREATE MATERIALIZED VIEW IF NOT EXISTS consumo_weekly_room
+WITH (timescaledb.continuous) AS
+SELECT
+    time_bucket('1 week', day) AS week,
+    fk_empresa,
+    fk_sala,
+    SUM(total_potencia) AS total_potencia,
+    AVG(avg_potencia) AS avg_potencia,
+    MAX(max_potencia) AS max_potencia,
+    MIN(min_potencia) AS min_potencia
+FROM consumo_daily_room
+GROUP BY time_bucket('1 week', day), fk_empresa, fk_sala
+WITH NO DATA;
+
+CREATE INDEX IF NOT EXISTS idx_consumo_weekly_room_empresa_week
+    ON consumo_weekly_room (fk_empresa, week DESC);
+
+SELECT add_continuous_aggregate_policy('consumo_weekly_room',
+    start_offset => INTERVAL '4 weeks',
+    end_offset => INTERVAL '1 week',
+    schedule_interval => INTERVAL '6 hours');
+
+-- ========================================
+-- CONSUMO SEMANAL POR SETOR
+-- ========================================
+DROP MATERIALIZED VIEW IF EXISTS consumo_weekly_department CASCADE;
+
+CREATE MATERIALIZED VIEW IF NOT EXISTS consumo_weekly_department
+WITH (timescaledb.continuous) AS
+SELECT
+    time_bucket('1 week', day) AS week,
+    fk_empresa,
+    fk_setor,
+    SUM(total_potencia) AS total_potencia,
+    AVG(avg_potencia) AS avg_potencia,
+    MAX(max_potencia) AS max_potencia,
+    MIN(min_potencia) AS min_potencia
+FROM consumo_daily_department
+GROUP BY time_bucket('1 week', day), fk_empresa, fk_setor
+WITH NO DATA;
+
+CREATE INDEX IF NOT EXISTS idx_consumo_weekly_department_empresa_week
+    ON consumo_weekly_department (fk_empresa, week DESC);
+
+SELECT add_continuous_aggregate_policy('consumo_weekly_department',
+    start_offset => INTERVAL '4 weeks',
+    end_offset => INTERVAL '1 week',
+    schedule_interval => INTERVAL '6 hours');
+
+-- ========================================
+-- VIEWS MENSAIS
+-- ========================================
+
+-- ========================================
+-- CONSUMO MENSAL POR DISPOSITIVO-SALA
+-- ========================================
+DROP MATERIALIZED VIEW IF EXISTS consumo_monthly_device_room CASCADE;
+
+CREATE MATERIALIZED VIEW IF NOT EXISTS consumo_monthly_device_room
+WITH (timescaledb.continuous) AS
+SELECT
+    time_bucket('1 month', day) AS month,
+    fk_empresa,
+    fk_dispositivo_sala,
+    SUM(total_potencia) AS total_potencia,
+    AVG(avg_potencia) AS avg_potencia,
+    MAX(max_potencia) AS max_potencia,
+    MIN(min_potencia) AS min_potencia,
+    SUM(total_leituras) AS total_leituras
+FROM consumo_daily_device_room
+GROUP BY time_bucket('1 month', day), fk_empresa, fk_dispositivo_sala
+WITH NO DATA;
+
+CREATE INDEX IF NOT EXISTS idx_consumo_monthly_device_room_empresa_month
+    ON consumo_monthly_device_room (fk_empresa, month DESC);
+
+SELECT add_continuous_aggregate_policy('consumo_monthly_device_room',
+    start_offset => INTERVAL '3 months',
+    end_offset => INTERVAL '1 month',
+    schedule_interval => INTERVAL '12 hours');
+
+-- ========================================
+-- CONSUMO MENSAL POR SALA
+-- ========================================
+DROP MATERIALIZED VIEW IF EXISTS consumo_monthly_room CASCADE;
+
+CREATE MATERIALIZED VIEW IF NOT EXISTS consumo_monthly_room
+WITH (timescaledb.continuous) AS
+SELECT
+    time_bucket('1 month', day) AS month,
+    fk_empresa,
+    fk_sala,
+    SUM(total_potencia) AS total_potencia,
+    AVG(avg_potencia) AS avg_potencia,
+    MAX(max_potencia) AS max_potencia,
+    MIN(min_potencia) AS min_potencia
+FROM consumo_daily_room
+GROUP BY time_bucket('1 month', day), fk_empresa, fk_sala
+WITH NO DATA;
+
+CREATE INDEX IF NOT EXISTS idx_consumo_monthly_room_empresa_month
+    ON consumo_monthly_room (fk_empresa, month DESC);
+
+SELECT add_continuous_aggregate_policy('consumo_monthly_room',
+    start_offset => INTERVAL '3 months',
+    end_offset => INTERVAL '1 month',
+    schedule_interval => INTERVAL '12 hours');
+
+-- ========================================
+-- CONSUMO MENSAL POR SETOR
+-- ========================================
+DROP MATERIALIZED VIEW IF EXISTS consumo_monthly_department CASCADE;
+
+CREATE MATERIALIZED VIEW IF NOT EXISTS consumo_monthly_department
+WITH (timescaledb.continuous) AS
+SELECT
+    time_bucket('1 month', day) AS month,
+    fk_empresa,
+    fk_setor,
+    SUM(total_potencia) AS total_potencia,
+    AVG(avg_potencia) AS avg_potencia,
+    MAX(max_potencia) AS max_potencia,
+    MIN(min_potencia) AS min_potencia
+FROM consumo_daily_department
+GROUP BY time_bucket('1 month', day), fk_empresa, fk_setor
+WITH NO DATA;
+
+CREATE INDEX IF NOT EXISTS idx_consumo_monthly_department_empresa_month
+    ON consumo_monthly_department (fk_empresa, month DESC);
+
+SELECT add_continuous_aggregate_policy('consumo_monthly_department',
+    start_offset => INTERVAL '3 months',
+    end_offset => INTERVAL '1 month',
+    schedule_interval => INTERVAL '12 hours');
