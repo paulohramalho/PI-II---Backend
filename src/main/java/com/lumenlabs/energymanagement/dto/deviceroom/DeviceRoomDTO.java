@@ -12,13 +12,15 @@ public class DeviceRoomDTO {
 	private Float averageTimeHour;
 	private RoomDTO room;
 	private DeviceDTO device;
+	private boolean online;
 
-	public DeviceRoomDTO(UUID id, String alias, Float averageTimeHour, RoomDTO room, DeviceDTO device) {
+	public DeviceRoomDTO(UUID id, String alias, Float averageTimeHour, RoomDTO room, DeviceDTO device, boolean online) {
 		this.id = id;
 		this.alias = alias;
 		this.averageTimeHour = averageTimeHour;
 		this.room = room;
 		this.device = device;
+		this.online = online;
 	}
 
 	public UUID getId() {
@@ -59,6 +61,14 @@ public class DeviceRoomDTO {
 
 	public void setDevice(DeviceDTO device) {
 		this.device = device;
+	}
+
+	public boolean isOnline() {
+		return online;
+	}
+
+	public void setOnline(boolean online) {
+		this.online = online;
 	}
 
 }

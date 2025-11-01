@@ -26,9 +26,9 @@ public class DeviceRoomMapper {
 				deviceRoomRegistrationDTO.getAverageTimeHour());
 	}
 
-	public DeviceRoomDTO mapToDeviceRoomDTO(DeviceRoom deviceRoom) {
+	public DeviceRoomDTO mapToDeviceRoomDTO(DeviceRoom deviceRoom, boolean online) {
 		return new DeviceRoomDTO(deviceRoom.getId(), deviceRoom.getAlias(), deviceRoom.getAverageTimeHour(),
-				roomMapper.mapToRoomDTO(deviceRoom.getRoom()), deviceMapper.mapToDeviceDTO(deviceRoom.getDevice()));
+				roomMapper.mapToRoomDTO(deviceRoom.getRoom()), deviceMapper.mapToDeviceDTO(deviceRoom.getDevice()), online);
 	}
 	
 	public void copyToDeviceRoom(DeviceRoomUpdateDTO deviceRoomUpdateDTO, DeviceRoom deviceRoom) {

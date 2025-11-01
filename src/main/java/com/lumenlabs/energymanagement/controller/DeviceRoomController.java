@@ -38,55 +38,62 @@ import jakarta.validation.Valid;
 @RequestMapping("/api/device-room")
 @Tag(name = "Gerenciamento de Vínculos")
 public class DeviceRoomController {
-	
+
 	@Autowired
 	private DeviceRoomService deviceRoomService;
-	
+
 	@Autowired
 	private SecurityUtils securityUtils;
-	
+
 	@Operation(summary = "Listagem de todas as associações")
 	@GetMapping
-	public ResponseEntity<Page<DeviceRoomDTO>> getRooms(@RequestParam(required = false, defaultValue = "") @Parameter(description = "Apelido da Associação") String alias, 
-			@PageableDefault(sort = "alias", direction = Direction.ASC) @ParameterObject Pageable pageable){
-		return ResponseEntity.ok(deviceRoomService.getAll(securityUtils.getLoggedUserCompany().getId(), alias, pageable));
+	public ResponseEntity<Page<DeviceRoomDTO>> getRooms(
+			@RequestParam(required = false, defaultValue = "") @Parameter(description = "Apelido da Associação") String alias,
+
+			@RequestParam(required = false) @Parameter(description = "ID da Sala") UUID roomId,
+
+			@RequestParam(required = false) @Parameter(description = "ID do Dispositivo") UUID deviceId,
+
+			@PageableDefault(sort = "alias", direction = Direction.ASC) @ParameterObject Pageable pageable) {
+
+		UUID companyId = securityUtils.getLoggedUserCompany().getId();
+		return ResponseEntity.ok(deviceRoomService.getAll(companyId, alias, roomId, deviceId, pageable));
 	}
-	
+
 	@Operation(summary = "Obter informações de uma associação")
 	@GetMapping("/{id}")
-	public ResponseEntity<DeviceRoomDTO> getRoom(@PathVariable UUID id){
+	public ResponseEntity<DeviceRoomDTO> getRoom(@PathVariable UUID id) {
 		return ResponseEntity.ok(deviceRoomService.getDeviceRoom(securityUtils.getLoggedUserCompany().getId(), id));
 	}
-	
+
 	@Operation(summary = "Associar dispositivo a uma sala")
 	@PreAuthorize("hasRole('ADMIN')")
 	@PostMapping
-	public ResponseEntity<?> createDeviceRoom(@RequestBody @Valid DeviceRoomRegistrationDTO deviceRoomRegistrationDTO){
-		DeviceRoom deviceRoom = deviceRoomService.createDeviceRoom(securityUtils.getLoggedUserCompany(), deviceRoomRegistrationDTO);
-		
-		URI location = ServletUriComponentsBuilder
-	            .fromCurrentRequest()
-	            .path("/{id}")
-	            .buildAndExpand(deviceRoom.getId())
-	            .toUri();
+	public ResponseEntity<?> createDeviceRoom(@RequestBody @Valid DeviceRoomRegistrationDTO deviceRoomRegistrationDTO) {
+		DeviceRoom deviceRoom = deviceRoomService.createDeviceRoom(securityUtils.getLoggedUserCompany(),
+				deviceRoomRegistrationDTO);
 
-	    return ResponseEntity.created(location).build();
+		URI location = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}").buildAndExpand(deviceRoom.getId())
+				.toUri();
+
+		return ResponseEntity.created(location).build();
 	}
 
 	@Operation(summary = "Atualizar informações de um vínculo")
 	@PreAuthorize("hasRole('ADMIN')")
 	@PutMapping("/{id}")
-	public ResponseEntity<?> updateRoom(@RequestBody @Valid DeviceRoomUpdateDTO deviceRoomUpdateDTO, @PathVariable UUID id){
+	public ResponseEntity<?> updateRoom(@RequestBody @Valid DeviceRoomUpdateDTO deviceRoomUpdateDTO,
+			@PathVariable UUID id) {
 		deviceRoomService.updateDeviceRoom(securityUtils.getLoggedUserCompany(), deviceRoomUpdateDTO, id);
 		return ResponseEntity.ok().build();
 	}
-	
+
 	@Operation(summary = "Desassociar dispositivo de uma sala")
 	@PreAuthorize("hasRole('ADMIN')")
 	@DeleteMapping("/{id}")
-	public ResponseEntity<?> deleteRoom(@PathVariable UUID id){
+	public ResponseEntity<?> deleteRoom(@PathVariable UUID id) {
 		deviceRoomService.deleteDeviceRoom(securityUtils.getLoggedUserCompany().getId(), id);
 		return ResponseEntity.ok().build();
 	}
-	
+
 }

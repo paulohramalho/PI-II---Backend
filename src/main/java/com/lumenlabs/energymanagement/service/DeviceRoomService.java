@@ -1,5 +1,6 @@
 package com.lumenlabs.energymanagement.service;
 
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,13 +28,13 @@ public class DeviceRoomService {
 
 	@Autowired
 	private DeviceRoomRepository deviceRoomRepository;
-	
+
 	@Autowired
 	private RoomRepository roomRepository;
-	
+
 	@Autowired
 	private DepartmentRepository departmentRepository;
-	
+
 	@Autowired
 	private DeviceRepository deviceRepository;
 
@@ -45,7 +46,8 @@ public class DeviceRoomService {
 				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Sala não encontrada"));
 		Device device = deviceRepository.findByCompanyIdAndId(company.getId(), deviceRoomRegistrationDTO.getDeviceId())
 				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Dispositivo não encontrado"));
-		if(deviceRoomRepository.existsByCompanyIdAndRoomIdAndAliasIgnoreCase(company.getId(), room.getId(), deviceRoomRegistrationDTO.getAlias()))
+		if (deviceRoomRepository.existsByCompanyIdAndRoomIdAndAliasIgnoreCase(company.getId(), room.getId(),
+				deviceRoomRegistrationDTO.getAlias()))
 			throw new ResponseStatusException(HttpStatus.CONFLICT, "Apelido já existente na sala");
 		DeviceRoom deviceRoom = deviceRoomMapper.mapToDeviceRoom(deviceRoomRegistrationDTO, room, device);
 		deviceRoom.setCompany(company);
@@ -53,15 +55,26 @@ public class DeviceRoomService {
 	}
 
 	public DeviceRoomDTO getDeviceRoom(UUID companyId, UUID id) {
-		DeviceRoom deviceRoom = deviceRoomRepository.findByCompanyIdAndId(companyId, id)
-				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Associação entre dispositivo e sala não encontrada"));
-		return deviceRoomMapper.mapToDeviceRoomDTO(deviceRoom);
+	    DeviceRoom deviceRoom = deviceRoomRepository.findByCompanyIdAndId(companyId, id)
+	            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
+	                    "Associação entre dispositivo e sala não encontrada"));
+
+	    boolean online = deviceRoomRepository.isDeviceRoomOnline(
+	            deviceRoom.getId(),
+	            companyId,
+	            LocalDateTime.now().minusHours(1)
+	    );
+
+	    return deviceRoomMapper.mapToDeviceRoomDTO(deviceRoom, online);
 	}
+
 
 	public void updateDeviceRoom(Company company, DeviceRoomUpdateDTO deviceRoomUpdateDTO, UUID id) {
 		DeviceRoom deviceRoom = deviceRoomRepository.findByCompanyIdAndId(company.getId(), id)
-				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Associação entre dispositivo e sala não encontrada"));
-		if(deviceRoomRepository.existsByCompanyIdAndRoomIdAndAliasIgnoreCaseAndIdNot(company.getId(), deviceRoom.getRoom().getId(), deviceRoomUpdateDTO.getAlias(), deviceRoom.getId()))
+				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
+						"Associação entre dispositivo e sala não encontrada"));
+		if (deviceRoomRepository.existsByCompanyIdAndRoomIdAndAliasIgnoreCaseAndIdNot(company.getId(),
+				deviceRoom.getRoom().getId(), deviceRoomUpdateDTO.getAlias(), deviceRoom.getId()))
 			throw new ResponseStatusException(HttpStatus.CONFLICT, "Apelido já existente na sala");
 		deviceRoomMapper.copyToDeviceRoom(deviceRoomUpdateDTO, deviceRoom);
 		deviceRoomRepository.save(deviceRoom);
@@ -69,27 +82,58 @@ public class DeviceRoomService {
 
 	public void deleteDeviceRoom(UUID companyId, UUID id) {
 		DeviceRoom deviceRoom = deviceRoomRepository.findByCompanyIdAndId(companyId, id)
-				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Associação entre dispositivo e sala não encontrada"));
+				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
+						"Associação entre dispositivo e sala não encontrada"));
 		deviceRoomRepository.delete(deviceRoom);
 	}
 
-	public Page<DeviceRoomDTO> getAll(UUID companyId, String alias, Pageable pageable) {
-		return deviceRoomRepository.findAllByCompanyIdAndAliasContainingIgnoreCase(companyId, alias, pageable)
-				.map(deviceRoomMapper::mapToDeviceRoomDTO);
+	public Page<DeviceRoomDTO> getAll(UUID companyId, String alias, UUID roomId, UUID deviceId, Pageable pageable) {
+	    Page<DeviceRoom> page = deviceRoomRepository.findAllWithFilters(companyId, alias, roomId, deviceId, pageable);
+
+	    return page.map(deviceRoom -> {
+	        boolean online = deviceRoomRepository.isDeviceRoomOnline(
+	                deviceRoom.getId(),
+	                companyId,
+	                LocalDateTime.now().minusHours(1)
+	        );
+	        return deviceRoomMapper.mapToDeviceRoomDTO(deviceRoom, online);
+	    });
 	}
-	
-	public Page<DeviceRoomDTO> getDeviceRoomByRoom(UUID companyId, UUID roomId, String alias, Pageable pageable){
-		if(!roomRepository.existsByCompanyIdAndId(companyId, roomId))
-			throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Sala não encontrada");
-		return deviceRoomRepository.findAllByRoomIdAndCompanyIdAndAliasContainingIgnoreCase(roomId, companyId, alias, pageable)
-				.map(deviceRoomMapper::mapToDeviceRoomDTO);
+
+
+	public Page<DeviceRoomDTO> getDeviceRoomByRoom(UUID companyId, UUID roomId, String alias, Pageable pageable) {
+	    if (!roomRepository.existsByCompanyIdAndId(companyId, roomId))
+	        throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Sala não encontrada");
+
+	    Page<DeviceRoom> page = deviceRoomRepository
+	            .findAllByRoomIdAndCompanyIdAndAliasContainingIgnoreCase(roomId, companyId, alias, pageable);
+
+	    return page.map(deviceRoom -> {
+	        boolean online = deviceRoomRepository.isDeviceRoomOnline(
+	                deviceRoom.getId(),
+	                companyId,
+	                LocalDateTime.now().minusHours(1)
+	        );
+	        return deviceRoomMapper.mapToDeviceRoomDTO(deviceRoom, online);
+	    });
 	}
-	
-	public Page<DeviceRoomDTO> getDeviceRoomByDepartment(UUID companyId, UUID departmentId, String alias, Pageable pageable){
-		if(!departmentRepository.existsByCompanyIdAndId(companyId, departmentId))
-			throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Setor não encontrado");
-		return deviceRoomRepository.findAllByRoomDepartmentIdAndCompanyIdAndAliasContainingIgnoreCase(departmentId, companyId, alias, pageable)
-				.map(deviceRoomMapper::mapToDeviceRoomDTO);
+
+
+	public Page<DeviceRoomDTO> getDeviceRoomByDepartment(UUID companyId, UUID departmentId, String alias, Pageable pageable) {
+	    if (!departmentRepository.existsByCompanyIdAndId(companyId, departmentId))
+	        throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Setor não encontrado");
+
+	    Page<DeviceRoom> page = deviceRoomRepository
+	            .findAllByRoomDepartmentIdAndCompanyIdAndAliasContainingIgnoreCase(departmentId, companyId, alias, pageable);
+
+	    return page.map(deviceRoom -> {
+	        boolean online = deviceRoomRepository.isDeviceRoomOnline(
+	                deviceRoom.getId(),
+	                companyId,
+	                LocalDateTime.now().minusHours(1)
+	        );
+	        return deviceRoomMapper.mapToDeviceRoomDTO(deviceRoom, online);
+	    });
 	}
-	
+
 }
