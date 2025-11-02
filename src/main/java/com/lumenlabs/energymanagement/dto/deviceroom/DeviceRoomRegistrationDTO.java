@@ -11,9 +11,9 @@ public class DeviceRoomRegistrationDTO {
 	private String alias;
 	@NotNull(message = "Tempo de funcionamento diario (horas) é obrigatório")
 	private Float averageTimeHour;
-	@NotNull(message = "ID da sala é obrigatório")
+	@NotNull(message = "Sala é obrigatória")
 	private UUID roomId;
-	@NotNull(message = "ID do dispositivo é obrigatório")
+	@NotNull(message = "Dispositivo é obrigatório")
 	private UUID deviceId;
 
 	public DeviceRoomRegistrationDTO(String alias, Float averageTimeHour, UUID roomId, UUID deviceId) {

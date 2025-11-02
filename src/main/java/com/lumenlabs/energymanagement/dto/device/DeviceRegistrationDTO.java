@@ -12,7 +12,7 @@ public class DeviceRegistrationDTO {
 	private String name;
 	@NotNull(message = "Potência é obrigatória")
 	private BigDecimal power;
-	@NotNull(message = "ID do Tipo Dispositivo é obrigatório")
+	@NotNull(message = "Tipo do Dispositivo é obrigatório")
 	private UUID deviceTypeId;
 
 	public String getName() {

@@ -32,16 +32,7 @@ public class ConsumptionController {
 	@Autowired
 	private SecurityUtils securityUtils;
 
-	/**
-	 * Endpoint de evolução de consumo com filtros opcionais
-	 * 
-	 * Exemplos:
-	 * - DEPARTMENT: /api/consumption/evolution?resource=DEPARTMENT&start=2024-01-01T00:00:00&end=2024-01-31T23:59:59
-	 * - ROOM (todas): /api/consumption/evolution?resource=ROOM&start=2024-01-01T00:00:00&end=2024-01-31T23:59:59
-	 * - ROOM (filtrado por setor): /api/consumption/evolution?resource=ROOM&start=2024-01-01T00:00:00&end=2024-01-31T23:59:59&setorId=a0000000-0000-0000-0000-000000000101
-	 * - DEVICE_ROOM (todos): /api/consumption/evolution?resource=DEVICE_ROOM&start=2024-01-01T00:00:00&end=2024-01-31T23:59:59
-	 * - DEVICE_ROOM (filtrado por sala): /api/consumption/evolution?resource=DEVICE_ROOM&start=2024-01-01T00:00:00&end=2024-01-31T23:59:59&salaId=a0000000-0000-0000-0000-000000000201
-	 */
+
 	@GetMapping("/evolution")
 	@Operation(
 		summary = "Obter evolução do consumo",
@@ -58,33 +49,23 @@ public class ConsumptionController {
 			@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime end,
 			
 			@Parameter(description = "ID do setor (opcional, apenas para ROOM)")
-			@RequestParam(required = false) UUID setorId,
+			@RequestParam(required = false) UUID departmentId,
 			
 			@Parameter(description = "ID da sala (opcional, apenas para DEVICE_ROOM)")
-			@RequestParam(required = false) UUID salaId) {
+			@RequestParam(required = false) UUID roomId) {
 		
 		ConsumptionEvolutionResponse response = consumptionService.getEvolution(
 			securityUtils.getLoggedUserCompany().getId(), 
 			resource, 
 			start, 
 			end,
-			setorId,
-			salaId
+			departmentId,
+			roomId
 		);
 		
 		return ResponseEntity.ok(response);
 	}
 
-	/**
-	 * Endpoint de proporção de consumo com filtros opcionais
-	 * 
-	 * Exemplos:
-	 * - DEPARTMENT: /api/consumption/ratio?resource=DEPARTMENT&start=2024-01-01T00:00:00&end=2024-01-31T23:59:59
-	 * - ROOM (todas): /api/consumption/ratio?resource=ROOM&start=2024-01-01T00:00:00&end=2024-01-31T23:59:59
-	 * - ROOM (filtrado por setor): /api/consumption/ratio?resource=ROOM&start=2024-01-01T00:00:00&end=2024-01-31T23:59:59&setorId=a0000000-0000-0000-0000-000000000101
-	 * - DEVICE_ROOM (todos): /api/consumption/ratio?resource=DEVICE_ROOM&start=2024-01-01T00:00:00&end=2024-01-31T23:59:59
-	 * - DEVICE_ROOM (filtrado por sala): /api/consumption/ratio?resource=DEVICE_ROOM&start=2024-01-01T00:00:00&end=2024-01-31T23:59:59&salaId=a0000000-0000-0000-0000-000000000201
-	 */
 	@GetMapping("/ratio")
 	@Operation(
 		summary = "Obter proporção do consumo",
@@ -101,18 +82,18 @@ public class ConsumptionController {
 			@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime end,
 			
 			@Parameter(description = "ID do setor (opcional, apenas para ROOM)")
-			@RequestParam(required = false) UUID setorId,
+			@RequestParam(required = false) UUID departmentId,
 			
 			@Parameter(description = "ID da sala (opcional, apenas para DEVICE_ROOM)")
-			@RequestParam(required = false) UUID salaId) {
+			@RequestParam(required = false) UUID roomId) {
 		
 		ConsumptionRatioResponse response = consumptionService.getRatio(
 			securityUtils.getLoggedUserCompany().getId(), 
 			resource, 
 			start, 
 			end,
-			setorId,
-			salaId
+			departmentId,
+			roomId
 		);
 		
 		return ResponseEntity.ok(response);

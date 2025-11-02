@@ -31,10 +31,6 @@ public class ConsumptionService {
 	@Autowired
 	private ConsumptionRepository consumptionRepository;
 
-	// ========================================
-	// EVOLUTION
-	// ========================================
-
 	public ConsumptionEvolutionResponse getEvolution(UUID empresaId, ResourceType resourceType, LocalDateTime startDate,
 			LocalDateTime endDate, UUID setorId, UUID salaId) {
 		Granularity granularity = determineGranularity(startDate, endDate);
@@ -53,17 +49,18 @@ public class ConsumptionService {
 	}
 
 	private Granularity determineGranularity(LocalDateTime start, LocalDateTime end) {
-		long daysBetween = ChronoUnit.DAYS.between(start, end);
+	    long hoursBetween = ChronoUnit.HOURS.between(start, end);
+	    long daysBetween = ChronoUnit.DAYS.between(start, end);
 
-		if (daysBetween <= 2) {
-			return Granularity.HOURLY;
-		} else if (daysBetween <= 60) {
-			return Granularity.DAILY;
-		} else if (daysBetween <= 180) {
-			return Granularity.WEEKLY;
-		} else {
-			return Granularity.MONTHLY;
-		}
+	    if (hoursBetween <= 48) {
+	        return Granularity.HOURLY;
+	    } else if (daysBetween <= 31) {
+	        return Granularity.DAILY;
+	    } else if (daysBetween <= 90) {
+	        return Granularity.WEEKLY;
+	    } else {
+	        return Granularity.MONTHLY;
+	    }
 	}
 
 	private List<Object[]> fetchEvolutionData(UUID empresaId, ResourceType resourceType, Granularity granularity,
@@ -302,9 +299,6 @@ public class ConsumptionService {
 				.build();
 	}
 
-	// ========================================
-	// RATIO
-	// ========================================
 
 	public ConsumptionRatioResponse getRatio(UUID empresaId, ResourceType resourceType, LocalDateTime startDate,
 			LocalDateTime endDate, UUID setorId, UUID salaId) {

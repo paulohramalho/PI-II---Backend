@@ -10,7 +10,7 @@ public class RoomRegistrationDTO {
 	@NotBlank(message = "Nome é obrigatório")
 	private String name;
 	private String description;
-	@NotNull(message = "ID Setor é obrigatório")
+	@NotNull(message = "Setor é obrigatório")
 	private UUID departmentId;
 
 	public String getName() {

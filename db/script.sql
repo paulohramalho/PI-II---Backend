@@ -472,7 +472,9 @@ VALUES ('a0000000-0000-0000-0000-000000000020', 'João Silva', 'admin@admin', '$
 INSERT INTO setor (id, nome, descricao, fk_empresa) VALUES
 ('a0000000-0000-0000-0000-000000000101', 'TI', 'Tecnologia da Informação', 'a0000000-0000-0000-0000-000000000001'),
 ('a0000000-0000-0000-0000-000000000102', 'Administrativo', 'Setor Administrativo', 'a0000000-0000-0000-0000-000000000001'),
-('a0000000-0000-0000-0000-000000000103', 'Produção', 'Setor de Produção', 'a0000000-0000-0000-0000-000000000001');
+('a0000000-0000-0000-0000-000000000103', 'Produção', 'Setor de Produção', 'a0000000-0000-0000-0000-000000000001'),
+('a0000000-0000-0000-0000-000000000104', 'RH', 'Recursos Humanos', 'a0000000-0000-0000-0000-000000000001'),
+('a0000000-0000-0000-0000-000000000105', 'Financeiro', 'Setor Financeiro', 'a0000000-0000-0000-0000-000000000001');
 
 -- ========================================
 -- 5. CRIAR SALAS
@@ -482,7 +484,10 @@ INSERT INTO sala (id, nome, descricao, fk_setor, fk_empresa) VALUES
 ('a0000000-0000-0000-0000-000000000202', 'Sala Desenvolvimento', 'Sala dos Desenvolvedores', 'a0000000-0000-0000-0000-000000000101', 'a0000000-0000-0000-0000-000000000001'),
 ('a0000000-0000-0000-0000-000000000203', 'Sala Reunião', 'Sala de Reuniões', 'a0000000-0000-0000-0000-000000000102', 'a0000000-0000-0000-0000-000000000001'),
 ('a0000000-0000-0000-0000-000000000204', 'Linha Montagem 1', 'Linha de Montagem Principal', 'a0000000-0000-0000-0000-000000000103', 'a0000000-0000-0000-0000-000000000001'),
-('a0000000-0000-0000-0000-000000000205', 'Linha Montagem 2', 'Linha de Montagem Secundária', 'a0000000-0000-0000-0000-000000000103', 'a0000000-0000-0000-0000-000000000001');
+('a0000000-0000-0000-0000-000000000205', 'Linha Montagem 2', 'Linha de Montagem Secundária', 'a0000000-0000-0000-0000-000000000103', 'a0000000-0000-0000-0000-000000000001'),
+('a0000000-0000-0000-0000-000000000206', 'RH Central', 'Sala Central de RH', 'a0000000-0000-0000-0000-000000000104', 'a0000000-0000-0000-0000-000000000001'),
+('a0000000-0000-0000-0000-000000000207', 'Contabilidade', 'Sala de Contabilidade', 'a0000000-0000-0000-0000-000000000105', 'a0000000-0000-0000-0000-000000000001'),
+('a0000000-0000-0000-0000-000000000208', 'Almoxarifado', 'Depósito e Almoxarifado', 'a0000000-0000-0000-0000-000000000103', 'a0000000-0000-0000-0000-000000000001');
 
 -- ========================================
 -- 6. CRIAR TIPOS DE DISPOSITIVO
@@ -491,7 +496,9 @@ INSERT INTO tipo_dispositivo (id, nome, fk_empresa) VALUES
 ('a0000000-0000-0000-0000-000000000301', 'Ar Condicionado', 'a0000000-0000-0000-0000-000000000001'),
 ('a0000000-0000-0000-0000-000000000302', 'Computador', 'a0000000-0000-0000-0000-000000000001'),
 ('a0000000-0000-0000-0000-000000000303', 'Iluminação LED', 'a0000000-0000-0000-0000-000000000001'),
-('a0000000-0000-0000-0000-000000000304', 'Máquina Industrial', 'a0000000-0000-0000-0000-000000000001');
+('a0000000-0000-0000-0000-000000000304', 'Máquina Industrial', 'a0000000-0000-0000-0000-000000000001'),
+('a0000000-0000-0000-0000-000000000305', 'Impressora', 'a0000000-0000-0000-0000-000000000001'),
+('a0000000-0000-0000-0000-000000000306', 'Monitor', 'a0000000-0000-0000-0000-000000000001');
 
 -- ========================================
 -- 7. CRIAR DISPOSITIVOS
@@ -502,40 +509,67 @@ INSERT INTO dispositivo (id, nome, potencia, fk_tipo_dispositivo, fk_empresa) VA
 ('a0000000-0000-0000-0000-000000000403', 'Desktop i7', 350.0, 'a0000000-0000-0000-0000-000000000302', 'a0000000-0000-0000-0000-000000000001'),
 ('a0000000-0000-0000-0000-000000000404', 'Notebook i5', 65.0, 'a0000000-0000-0000-0000-000000000302', 'a0000000-0000-0000-0000-000000000001'),
 ('a0000000-0000-0000-0000-000000000405', 'Painel LED 40W', 40.0, 'a0000000-0000-0000-0000-000000000303', 'a0000000-0000-0000-0000-000000000001'),
-('a0000000-0000-0000-0000-000000000406', 'Torno CNC', 5500.0, 'a0000000-0000-0000-0000-000000000304', 'a0000000-0000-0000-0000-000000000001');
+('a0000000-0000-0000-0000-000000000406', 'Torno CNC', 5500.0, 'a0000000-0000-0000-0000-000000000304', 'a0000000-0000-0000-0000-000000000001'),
+('a0000000-0000-0000-0000-000000000407', 'Impressora Laser', 450.0, 'a0000000-0000-0000-0000-000000000305', 'a0000000-0000-0000-0000-000000000001'),
+('a0000000-0000-0000-0000-000000000408', 'Monitor 27"', 35.0, 'a0000000-0000-0000-0000-000000000306', 'a0000000-0000-0000-0000-000000000001'),
+('a0000000-0000-0000-0000-000000000409', 'Ar Split 9000 BTU', 900.0, 'a0000000-0000-0000-0000-000000000301', 'a0000000-0000-0000-0000-000000000001');
 
 -- ========================================
 -- 8. CRIAR DISPOSITIVOS-SALA
 -- ========================================
 INSERT INTO dispositivo_sala (id, apelido, tempo_medio_hora, fk_sala, fk_dispositivo, fk_empresa) VALUES
+-- TI
 ('a0000000-0000-0000-0000-000000000501', 'Ar Servidores', 24.0, 'a0000000-0000-0000-0000-000000000201', 'a0000000-0000-0000-0000-000000000402', 'a0000000-0000-0000-0000-000000000001'),
 ('a0000000-0000-0000-0000-000000000502', 'Ar Reunião', 4.0, 'a0000000-0000-0000-0000-000000000203', 'a0000000-0000-0000-0000-000000000401', 'a0000000-0000-0000-0000-000000000001'),
 ('a0000000-0000-0000-0000-000000000503', 'PC Dev 01', 8.0, 'a0000000-0000-0000-0000-000000000202', 'a0000000-0000-0000-0000-000000000403', 'a0000000-0000-0000-0000-000000000001'),
 ('a0000000-0000-0000-0000-000000000504', 'PC Dev 02', 8.0, 'a0000000-0000-0000-0000-000000000202', 'a0000000-0000-0000-0000-000000000403', 'a0000000-0000-0000-0000-000000000001'),
+-- Produção
 ('a0000000-0000-0000-0000-000000000505', 'Iluminação Prod 1', 10.0, 'a0000000-0000-0000-0000-000000000204', 'a0000000-0000-0000-0000-000000000405', 'a0000000-0000-0000-0000-000000000001'),
-('a0000000-0000-0000-0000-000000000506', 'Torno Prod 1', 8.0, 'a0000000-0000-0000-0000-000000000204', 'a0000000-0000-0000-0000-000000000406', 'a0000000-0000-0000-0000-000000000001');
+('a0000000-0000-0000-0000-000000000506', 'Torno Prod 1', 8.0, 'a0000000-0000-0000-0000-000000000204', 'a0000000-0000-0000-0000-000000000406', 'a0000000-0000-0000-0000-000000000001'),
+('a0000000-0000-0000-0000-000000000507', 'Iluminação Prod 2', 10.0, 'a0000000-0000-0000-0000-000000000205', 'a0000000-0000-0000-0000-000000000405', 'a0000000-0000-0000-0000-000000000001'),
+-- RH
+('a0000000-0000-0000-0000-000000000508', 'PC RH 01', 8.0, 'a0000000-0000-0000-0000-000000000206', 'a0000000-0000-0000-0000-000000000404', 'a0000000-0000-0000-0000-000000000001'),
+('a0000000-0000-0000-0000-000000000509', 'Impressora RH', 2.0, 'a0000000-0000-0000-0000-000000000206', 'a0000000-0000-0000-0000-000000000407', 'a0000000-0000-0000-0000-000000000001'),
+('a0000000-0000-0000-0000-000000000510', 'Ar RH', 8.0, 'a0000000-0000-0000-0000-000000000206', 'a0000000-0000-0000-0000-000000000409', 'a0000000-0000-0000-0000-000000000001'),
+-- Financeiro
+('a0000000-0000-0000-0000-000000000511', 'PC Contabil 01', 9.0, 'a0000000-0000-0000-0000-000000000207', 'a0000000-0000-0000-0000-000000000403', 'a0000000-0000-0000-0000-000000000001'),
+('a0000000-0000-0000-0000-000000000512', 'PC Contabil 02', 9.0, 'a0000000-0000-0000-0000-000000000207', 'a0000000-0000-0000-0000-000000000403', 'a0000000-0000-0000-0000-000000000001'),
+('a0000000-0000-0000-0000-000000000513', 'Monitor Extra 01', 9.0, 'a0000000-0000-0000-0000-000000000207', 'a0000000-0000-0000-0000-000000000408', 'a0000000-0000-0000-0000-000000000001'),
+-- Almoxarifado
+('a0000000-0000-0000-0000-000000000514', 'Iluminação Almox', 12.0, 'a0000000-0000-0000-0000-000000000208', 'a0000000-0000-0000-0000-000000000405', 'a0000000-0000-0000-0000-000000000001');
 
 -- ========================================
--- 9. GERAR DADOS DE CONSUMO
+-- GERAR DADOS DE CONSUMO - TIMESTAMP DO SISTEMA
 -- ========================================
--- Este bloco gera dados de consumo dos últimos 90 dias
--- com registros a cada 5 minutos (12 por hora)
+-- Gera dados realistas dos últimos 180 dias (6 meses)
+-- USANDO CURRENT_TIMESTAMP para garantir sincronia com o sistema
 
 DO $$
 DECLARE
-    start_date TIMESTAMPTZ := NOW() - INTERVAL '90 days';
-    end_date TIMESTAMPTZ := NOW();
+    start_date TIMESTAMPTZ := CURRENT_TIMESTAMP - INTERVAL '180 days';
+    end_date TIMESTAMPTZ := CURRENT_TIMESTAMP;
     curr_time TIMESTAMPTZ;
     hour_of_day INTEGER;
     day_of_week INTEGER;
+    is_today BOOLEAN;
+    is_yesterday BOOLEAN;
+    is_this_week BOOLEAN;
     
     devices CONSTANT UUID[] := ARRAY[
-        'a0000000-0000-0000-0000-000000000501'::UUID,
-        'a0000000-0000-0000-0000-000000000502'::UUID,
-        'a0000000-0000-0000-0000-000000000503'::UUID,
-        'a0000000-0000-0000-0000-000000000504'::UUID,
-        'a0000000-0000-0000-0000-000000000505'::UUID,
-        'a0000000-0000-0000-0000-000000000506'::UUID
+        'a0000000-0000-0000-0000-000000000501'::UUID, -- Ar Servidores
+        'a0000000-0000-0000-0000-000000000502'::UUID, -- Ar Reunião
+        'a0000000-0000-0000-0000-000000000503'::UUID, -- PC Dev 1
+        'a0000000-0000-0000-0000-000000000504'::UUID, -- PC Dev 2
+        'a0000000-0000-0000-0000-000000000505'::UUID, -- Iluminação Prod 1
+        'a0000000-0000-0000-0000-000000000506'::UUID, -- Torno CNC
+        'a0000000-0000-0000-0000-000000000507'::UUID, -- Iluminação Prod 2
+        'a0000000-0000-0000-0000-000000000508'::UUID, -- PC RH
+        'a0000000-0000-0000-0000-000000000509'::UUID, -- Impressora RH
+        'a0000000-0000-0000-0000-000000000510'::UUID, -- Ar RH
+        'a0000000-0000-0000-0000-000000000511'::UUID, -- PC Contabil 1
+        'a0000000-0000-0000-0000-000000000512'::UUID, -- PC Contabil 2
+        'a0000000-0000-0000-0000-000000000513'::UUID, -- Monitor Extra
+        'a0000000-0000-0000-0000-000000000514'::UUID  -- Iluminação Almox
     ];
     
     device_id UUID;
@@ -543,115 +577,232 @@ DECLARE
     corrente REAL;
     tensao REAL;
     total_inserted INTEGER := 0;
+    batch_size INTEGER := 0;
+    batch_limit INTEGER := 1000;
     
 BEGIN
     RAISE NOTICE '========================================';
-    RAISE NOTICE 'INICIANDO GERAÇÃO DE DADOS DE CONSUMO';
+    RAISE NOTICE 'INICIANDO GERACAO DE DADOS DE CONSUMO';
     RAISE NOTICE '========================================';
-    RAISE NOTICE 'Período: % até %', start_date, end_date;
+    RAISE NOTICE 'Timestamp Sistema: %', CURRENT_TIMESTAMP;
+    RAISE NOTICE 'Periodo: % ate %', start_date, end_date;
+    RAISE NOTICE 'Dispositivos: % dispositivos', array_length(devices, 1);
+    RAISE NOTICE 'Intervalo: 5 minutos (12 registros/hora)';
     
     curr_time := start_date;
+    
+    CREATE TEMP TABLE temp_consumo (
+        id UUID,
+        event_time TIMESTAMPTZ,
+        corrente REAL,
+        tensao REAL,
+        potencia_ativa REAL,
+        fk_dispositivo_sala UUID
+    ) ON COMMIT DROP;
     
     WHILE curr_time <= end_date LOOP
         hour_of_day := EXTRACT(HOUR FROM curr_time);
         day_of_week := EXTRACT(DOW FROM curr_time);
         
+        is_today := DATE(curr_time) = DATE(CURRENT_TIMESTAMP);
+        is_yesterday := DATE(curr_time) = DATE(CURRENT_TIMESTAMP - INTERVAL '1 day');
+        is_this_week := DATE(curr_time) >= DATE(DATE_TRUNC('week', CURRENT_TIMESTAMP));
+        
         FOREACH device_id IN ARRAY devices LOOP
             
-            -- Ar Servidores (24/7)
+            -- AR CONDICIONADO SERVIDORES (24/7)
             IF device_id = 'a0000000-0000-0000-0000-000000000501'::UUID THEN
-                potencia := 1800.0 + (random() * 200 - 100);
+                IF hour_of_day BETWEEN 14 AND 16 THEN
+                    potencia := 2000.0 + (random() * 200 - 100);
+                ELSIF hour_of_day BETWEEN 2 AND 5 THEN
+                    potencia := 1600.0 + (random() * 150 - 75);
+                ELSE
+                    potencia := 1800.0 + (random() * 200 - 100);
+                END IF;
                 tensao := 220.0 + (random() * 10 - 5);
                 corrente := potencia / tensao;
-                
-                INSERT INTO consumo (id, event_time, corrente, tensao, potencia_ativa, fk_dispositivo_sala)
-                VALUES (gen_random_uuid(), curr_time, corrente, tensao, potencia, device_id)
-                ON CONFLICT (id, event_time) DO NOTHING;
-                
-                total_inserted := total_inserted + 1;
+                INSERT INTO temp_consumo VALUES (gen_random_uuid(), curr_time, corrente, tensao, potencia, device_id);
+                batch_size := batch_size + 1;
             
-            -- Ar Reunião (segunda a sexta, 8h-17h)
+            -- AR CONDICIONADO REUNIÃO
             ELSIF device_id = 'a0000000-0000-0000-0000-000000000502'::UUID THEN
-                IF day_of_week BETWEEN 1 AND 5 AND hour_of_day BETWEEN 8 AND 17 THEN
-                    potencia := 1200.0 + (random() * 200 - 100);
-                    tensao := 220.0 + (random() * 10 - 5);
-                    corrente := potencia / tensao;
-                    
-                    INSERT INTO consumo (id, event_time, corrente, tensao, potencia_ativa, fk_dispositivo_sala)
-                    VALUES (gen_random_uuid(), curr_time, corrente, tensao, potencia, device_id)
-                    ON CONFLICT (id, event_time) DO NOTHING;
-                    
-                    total_inserted := total_inserted + 1;
-                END IF;
-            
-            -- PCs Dev (segunda a sexta, 7h-18h)
-            ELSIF device_id IN ('a0000000-0000-0000-0000-000000000503'::UUID, 'a0000000-0000-0000-0000-000000000504'::UUID) THEN
-                IF day_of_week BETWEEN 1 AND 5 AND hour_of_day BETWEEN 7 AND 18 THEN
-                    IF hour_of_day BETWEEN 9 AND 12 OR hour_of_day BETWEEN 14 AND 17 THEN
-                        potencia := 300.0 + (random() * 50);
+                IF day_of_week BETWEEN 1 AND 5 AND hour_of_day BETWEEN 8 AND 18 THEN
+                    IF (hour_of_day BETWEEN 10 AND 12) OR (hour_of_day BETWEEN 14 AND 17) THEN
+                        potencia := 1400.0 + (random() * 250 - 125);
                     ELSE
-                        potencia := 200.0 + (random() * 50);
+                        potencia := 1000.0 + (random() * 200 - 100);
                     END IF;
-                    
                     tensao := 220.0 + (random() * 10 - 5);
                     corrente := potencia / tensao;
-                    
-                    INSERT INTO consumo (id, event_time, corrente, tensao, potencia_ativa, fk_dispositivo_sala)
-                    VALUES (gen_random_uuid(), curr_time, corrente, tensao, potencia, device_id)
-                    ON CONFLICT (id, event_time) DO NOTHING;
-                    
-                    total_inserted := total_inserted + 1;
+                    INSERT INTO temp_consumo VALUES (gen_random_uuid(), curr_time, corrente, tensao, potencia, device_id);
+                    batch_size := batch_size + 1;
                 END IF;
             
-            -- Iluminação Prod (segunda a sexta, 6h-21h)
-            ELSIF device_id = 'a0000000-0000-0000-0000-000000000505'::UUID THEN
-                IF day_of_week BETWEEN 1 AND 5 AND hour_of_day BETWEEN 6 AND 21 THEN
-                    potencia := 40.0 + (random() * 5 - 2.5);
+            -- PCs DESENVOLVIMENTO
+            ELSIF device_id IN ('a0000000-0000-0000-0000-000000000503'::UUID, 
+                               'a0000000-0000-0000-0000-000000000504'::UUID) THEN
+                IF day_of_week BETWEEN 1 AND 5 AND hour_of_day BETWEEN 7 AND 19 THEN
+                    IF (hour_of_day BETWEEN 9 AND 12) OR (hour_of_day BETWEEN 14 AND 18) THEN
+                        IF random() < 0.15 THEN
+                            potencia := 400.0 + (random() * 100);
+                        ELSE
+                            potencia := 280.0 + (random() * 60);
+                        END IF;
+                    ELSIF hour_of_day = 7 OR hour_of_day = 19 THEN
+                        potencia := 180.0 + (random() * 40);
+                    ELSE
+                        potencia := 150.0 + (random() * 30);
+                    END IF;
                     tensao := 220.0 + (random() * 10 - 5);
                     corrente := potencia / tensao;
-                    
-                    INSERT INTO consumo (id, event_time, corrente, tensao, potencia_ativa, fk_dispositivo_sala)
-                    VALUES (gen_random_uuid(), curr_time, corrente, tensao, potencia, device_id)
-                    ON CONFLICT (id, event_time) DO NOTHING;
-                    
-                    total_inserted := total_inserted + 1;
+                    INSERT INTO temp_consumo VALUES (gen_random_uuid(), curr_time, corrente, tensao, potencia, device_id);
+                    batch_size := batch_size + 1;
                 END IF;
             
-            -- Torno CNC (segunda a sexta, 6h-21h)
+            -- ILUMINAÇÃO PRODUÇÃO
+            ELSIF device_id IN ('a0000000-0000-0000-0000-000000000505'::UUID,
+                               'a0000000-0000-0000-0000-000000000507'::UUID) THEN
+                IF day_of_week BETWEEN 1 AND 5 AND hour_of_day BETWEEN 6 AND 22 THEN
+                    IF hour_of_day BETWEEN 6 AND 8 OR hour_of_day BETWEEN 18 AND 22 THEN
+                        potencia := 45.0 + (random() * 5);
+                    ELSE
+                        potencia := 38.0 + (random() * 4);
+                    END IF;
+                    tensao := 220.0 + (random() * 10 - 5);
+                    corrente := potencia / tensao;
+                    INSERT INTO temp_consumo VALUES (gen_random_uuid(), curr_time, corrente, tensao, potencia, device_id);
+                    batch_size := batch_size + 1;
+                END IF;
+            
+            -- TORNO CNC
             ELSIF device_id = 'a0000000-0000-0000-0000-000000000506'::UUID THEN
-                IF day_of_week BETWEEN 1 AND 5 AND hour_of_day BETWEEN 6 AND 21 THEN
-                    IF random() < 0.3 THEN
-                        potencia := 2000.0 + (random() * 500);
-                    ELSE
-                        potencia := 4500.0 + (random() * 1000);
-                    END IF;
-                    
+                IF day_of_week BETWEEN 1 AND 5 AND hour_of_day BETWEEN 6 AND 22 THEN
+                    DECLARE estado REAL := random();
+                    BEGIN
+                        IF estado < 0.15 THEN
+                            potencia := 50.0 + (random() * 20);
+                        ELSIF estado < 0.35 THEN
+                            potencia := 800.0 + (random() * 200);
+                        ELSE
+                            IF random() < 0.4 THEN
+                                potencia := 3000.0 + (random() * 500);
+                            ELSE
+                                potencia := 4800.0 + (random() * 800);
+                            END IF;
+                        END IF;
+                    END;
                     tensao := 220.0 + (random() * 10 - 5);
                     corrente := potencia / tensao;
-                    
-                    INSERT INTO consumo (id, event_time, corrente, tensao, potencia_ativa, fk_dispositivo_sala)
-                    VALUES (gen_random_uuid(), curr_time, corrente, tensao, potencia, device_id)
-                    ON CONFLICT (id, event_time) DO NOTHING;
-                    
-                    total_inserted := total_inserted + 1;
+                    INSERT INTO temp_consumo VALUES (gen_random_uuid(), curr_time, corrente, tensao, potencia, device_id);
+                    batch_size := batch_size + 1;
                 END IF;
+            
+            -- PC RH
+            ELSIF device_id = 'a0000000-0000-0000-0000-000000000508'::UUID THEN
+                IF day_of_week BETWEEN 1 AND 5 AND hour_of_day BETWEEN 8 AND 17 THEN
+                    potencia := 50.0 + (random() * 30);
+                    tensao := 220.0 + (random() * 10 - 5);
+                    corrente := potencia / tensao;
+                    INSERT INTO temp_consumo VALUES (gen_random_uuid(), curr_time, corrente, tensao, potencia, device_id);
+                    batch_size := batch_size + 1;
+                END IF;
+            
+            -- IMPRESSORA RH
+            ELSIF device_id = 'a0000000-0000-0000-0000-000000000509'::UUID THEN
+                IF day_of_week BETWEEN 1 AND 5 AND hour_of_day BETWEEN 8 AND 17 AND random() < 0.1 THEN
+                    potencia := 350.0 + (random() * 100);
+                    tensao := 220.0 + (random() * 10 - 5);
+                    corrente := potencia / tensao;
+                    INSERT INTO temp_consumo VALUES (gen_random_uuid(), curr_time, corrente, tensao, potencia, device_id);
+                    batch_size := batch_size + 1;
+                END IF;
+            
+            -- AR RH
+            ELSIF device_id = 'a0000000-0000-0000-0000-000000000510'::UUID THEN
+                IF day_of_week BETWEEN 1 AND 5 AND hour_of_day BETWEEN 8 AND 17 THEN
+                    potencia := 850.0 + (random() * 100);
+                    tensao := 220.0 + (random() * 10 - 5);
+                    corrente := potencia / tensao;
+                    INSERT INTO temp_consumo VALUES (gen_random_uuid(), curr_time, corrente, tensao, potencia, device_id);
+                    batch_size := batch_size + 1;
+                END IF;
+            
+            -- PCs CONTABILIDADE
+            ELSIF device_id IN ('a0000000-0000-0000-0000-000000000511'::UUID,
+                               'a0000000-0000-0000-0000-000000000512'::UUID) THEN
+                IF day_of_week BETWEEN 1 AND 5 AND hour_of_day BETWEEN 8 AND 18 THEN
+                    potencia := 300.0 + (random() * 80);
+                    tensao := 220.0 + (random() * 10 - 5);
+                    corrente := potencia / tensao;
+                    INSERT INTO temp_consumo VALUES (gen_random_uuid(), curr_time, corrente, tensao, potencia, device_id);
+                    batch_size := batch_size + 1;
+                END IF;
+            
+            -- MONITOR EXTRA
+            ELSIF device_id = 'a0000000-0000-0000-0000-000000000513'::UUID THEN
+                IF day_of_week BETWEEN 1 AND 5 AND hour_of_day BETWEEN 8 AND 18 THEN
+                    potencia := 32.0 + (random() * 6);
+                    tensao := 220.0 + (random() * 10 - 5);
+                    corrente := potencia / tensao;
+                    INSERT INTO temp_consumo VALUES (gen_random_uuid(), curr_time, corrente, tensao, potencia, device_id);
+                    batch_size := batch_size + 1;
+                END IF;
+            
+            -- ILUMINAÇÃO ALMOXARIFADO
+            ELSIF device_id = 'a0000000-0000-0000-0000-000000000514'::UUID THEN
+                IF day_of_week BETWEEN 1 AND 5 AND hour_of_day BETWEEN 7 AND 18 THEN
+                    potencia := 42.0 + (random() * 4);
+                    tensao := 220.0 + (random() * 10 - 5);
+                    corrente := potencia / tensao;
+                    INSERT INTO temp_consumo VALUES (gen_random_uuid(), curr_time, corrente, tensao, potencia, device_id);
+                    batch_size := batch_size + 1;
+                END IF;
+            
             END IF;
             
         END LOOP;
         
+        IF batch_size >= batch_limit THEN
+            INSERT INTO consumo (id, event_time, corrente, tensao, potencia_ativa, fk_dispositivo_sala)
+            SELECT * FROM temp_consumo
+            ON CONFLICT (id, event_time) DO NOTHING;
+            
+            total_inserted := total_inserted + batch_size;
+            DELETE FROM temp_consumo;
+            batch_size := 0;
+        END IF;
+        
         curr_time := curr_time + INTERVAL '5 minutes';
         
-        -- Log a cada dia completo (meia-noite)
         IF EXTRACT(HOUR FROM curr_time) = 0 AND EXTRACT(MINUTE FROM curr_time) = 0 THEN
-            RAISE NOTICE '✓ Dia completo: %', DATE(curr_time - INTERVAL '1 day');
+            IF is_today THEN
+                RAISE NOTICE '[HOJE] %', DATE(curr_time - INTERVAL '1 day');
+            ELSIF is_yesterday THEN
+                RAISE NOTICE '[ONTEM] %', DATE(curr_time - INTERVAL '1 day');
+            ELSIF is_this_week THEN
+                RAISE NOTICE '[ESTA SEMANA] %', DATE(curr_time - INTERVAL '1 day');
+            ELSIF EXTRACT(DAY FROM curr_time) = 1 THEN
+                RAISE NOTICE '[MES] %', TO_CHAR(curr_time - INTERVAL '1 day', 'Mon/YYYY');
+            END IF;
         END IF;
         
     END LOOP;
     
+    IF batch_size > 0 THEN
+        INSERT INTO consumo (id, event_time, corrente, tensao, potencia_ativa, fk_dispositivo_sala)
+        SELECT * FROM temp_consumo
+        ON CONFLICT (id, event_time) DO NOTHING;
+        
+        total_inserted := total_inserted + batch_size;
+    END IF;
+    
     RAISE NOTICE '========================================';
-    RAISE NOTICE '✅ GERAÇÃO CONCLUÍDA';
+    RAISE NOTICE 'GERACAO CONCLUIDA COM SUCESSO!';
     RAISE NOTICE '========================================';
+    RAISE NOTICE 'Timestamp Final Sistema: %', CURRENT_TIMESTAMP;
     RAISE NOTICE 'Registros inseridos: %', total_inserted;
+    RAISE NOTICE 'Periodo: % dias', EXTRACT(DAY FROM (end_date - start_date));
+    RAISE NOTICE 'Dispositivos: %', array_length(devices, 1);
     
 END $$;
 
