@@ -157,64 +157,71 @@ public interface ConsumptionRepository extends JpaRepository<Consumption, UUID> 
 	// ========================================
 
 	@Query(value = """
-			SELECT
-			    cdd.fk_setor as entity_id,
-			    s.nome as name,
-			    SUM(cdd.total_potencia) as total_potencia
-			FROM consumo_daily_department cdd
-			JOIN setor s ON cdd.fk_setor = s.id
-			WHERE cdd.fk_empresa = :empresaId
-			    AND cdd.day >= :startDate
-			    AND cdd.day < :endDate
-			GROUP BY cdd.fk_setor, s.nome
-			ORDER BY total_potencia DESC
-			""", nativeQuery = true)
-	List<Object[]> findDepartmentRatio(@Param("empresaId") UUID empresaId, @Param("startDate") LocalDateTime startDate,
-			@Param("endDate") LocalDateTime endDate);
+	        SELECT
+	            chd.fk_setor as entity_id,
+	            s.nome as name,
+	            SUM(chd.total_potencia) as total_potencia
+	        FROM consumo_hourly_department chd
+	        JOIN setor s ON chd.fk_setor = s.id
+	        WHERE chd.fk_empresa = :empresaId
+	            AND chd.hour >= :startDate
+	            AND chd.hour < :endDate
+	        GROUP BY chd.fk_setor, s.nome
+	        ORDER BY total_potencia DESC
+	        """, nativeQuery = true)
+	List<Object[]> findDepartmentRatio(@Param("empresaId") UUID empresaId,
+	                                   @Param("startDate") LocalDateTime startDate,
+	                                   @Param("endDate") LocalDateTime endDate);
+
 
 	// ========================================
 	// RATIO - ROOM (SALA) - COM FILTRO DE SETOR
 	// ========================================
 
 	@Query(value = """
-			SELECT
-			    cdr.fk_sala as entity_id,
-			    sl.nome as name,
-			    SUM(cdr.total_potencia) as total_potencia
-			FROM consumo_daily_room cdr
-			JOIN sala sl ON cdr.fk_sala = sl.id
-			WHERE cdr.fk_empresa = :empresaId
-			    AND cdr.day >= :startDate
-			    AND cdr.day < :endDate
-			    AND (:setorId IS NULL OR sl.fk_setor = :setorId)
-			GROUP BY cdr.fk_sala, sl.nome
-			ORDER BY total_potencia DESC
-			""", nativeQuery = true)
-	List<Object[]> findRoomRatio(@Param("empresaId") UUID empresaId, @Param("startDate") LocalDateTime startDate,
-			@Param("endDate") LocalDateTime endDate, @Param("setorId") UUID setorId);
+	        SELECT
+	            chr.fk_sala as entity_id,
+	            sl.nome as name,
+	            SUM(chr.total_potencia) as total_potencia
+	        FROM consumo_hourly_room chr
+	        JOIN sala sl ON chr.fk_sala = sl.id
+	        WHERE chr.fk_empresa = :empresaId
+	            AND chr.hour >= :startDate
+	            AND chr.hour < :endDate
+	            AND (:setorId IS NULL OR sl.fk_setor = :setorId)
+	        GROUP BY chr.fk_sala, sl.nome
+	        ORDER BY total_potencia DESC
+	        """, nativeQuery = true)
+	List<Object[]> findRoomRatio(@Param("empresaId") UUID empresaId,
+	                             @Param("startDate") LocalDateTime startDate,
+	                             @Param("endDate") LocalDateTime endDate,
+	                             @Param("setorId") UUID setorId);
+
 
 	// ========================================
 	// RATIO - DEVICE_ROOM (VÍNCULO) - COM FILTRO DE SALA
 	// ========================================
 
 	@Query(value = """
-			SELECT
-			    cddr.fk_dispositivo_sala as entity_id,
-			    CONCAT(d.nome, ' - ', sl.nome) as name,
-			    SUM(cddr.total_potencia) as total_potencia
-			FROM consumo_daily_device_room cddr
-			JOIN dispositivo_sala ds ON cddr.fk_dispositivo_sala = ds.id
-			JOIN dispositivo d ON ds.fk_dispositivo = d.id
-			JOIN sala sl ON ds.fk_sala = sl.id
-			WHERE cddr.fk_empresa = :empresaId
-			    AND cddr.day >= :startDate
-			    AND cddr.day < :endDate
-			    AND (:salaId IS NULL OR ds.fk_sala = :salaId)
-			GROUP BY cddr.fk_dispositivo_sala, d.nome, sl.nome
-			ORDER BY total_potencia DESC
-			""", nativeQuery = true)
-	List<Object[]> findDeviceRoomRatio(@Param("empresaId") UUID empresaId, @Param("startDate") LocalDateTime startDate,
-			@Param("endDate") LocalDateTime endDate, @Param("salaId") UUID salaId);
+	        SELECT
+	            chdr.fk_dispositivo_sala as entity_id,
+	            CONCAT(d.nome, ' - ', sl.nome) as name,
+	            SUM(chdr.total_potencia) as total_potencia
+	        FROM consumo_hourly_device_room chdr
+	        JOIN dispositivo_sala ds ON chdr.fk_dispositivo_sala = ds.id
+	        JOIN dispositivo d ON ds.fk_dispositivo = d.id
+	        JOIN sala sl ON ds.fk_sala = sl.id
+	        WHERE chdr.fk_empresa = :empresaId
+	            AND chdr.hour >= :startDate
+	            AND chdr.hour < :endDate
+	            AND (:salaId IS NULL OR ds.fk_sala = :salaId)
+	        GROUP BY chdr.fk_dispositivo_sala, d.nome, sl.nome
+	        ORDER BY total_potencia DESC
+	        """, nativeQuery = true)
+	List<Object[]> findDeviceRoomRatio(@Param("empresaId") UUID empresaId,
+	                                   @Param("startDate") LocalDateTime startDate,
+	                                   @Param("endDate") LocalDateTime endDate,
+	                                   @Param("salaId") UUID salaId);
 
 	// ========================================
 	// DEVICE DETAIL - DADOS HORÁRIOS
