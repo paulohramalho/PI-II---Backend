@@ -539,12 +539,12 @@ INSERT INTO dispositivo_sala (id, apelido, tempo_medio_hora, fk_sala, fk_disposi
 ('a0000000-0000-0000-0000-000000000514', 'Iluminação Almox', 12.0, 'a0000000-0000-0000-0000-000000000208', 'a0000000-0000-0000-0000-000000000405', 'a0000000-0000-0000-0000-000000000001');
 
 -- ========================================
--- GERAR DADOS DE CONSUMO - OTIMIZADO UTC-3
+-- GERAR DADOS DE CONSUMO - 24/7 CONTÍNUO
 -- ========================================
--- Gera dados dos últimos 180 dias
+-- Gera dados dos últimos 180 dias até o momento atual
 -- TIMEZONE: America/Sao_Paulo (UTC-3)
 -- Intervalo: 5 minutos (12 registros/hora)
--- 24/7 para todos os dispositivos
+-- 24/7 TODOS OS DISPOSITIVOS - SEM RESTRIÇÕES
 
 DO $$
 DECLARE
@@ -581,13 +581,13 @@ DECLARE
     
 BEGIN
     RAISE NOTICE '========================================';
-    RAISE NOTICE 'GERACAO DE DADOS - UTC-3 (BR)';
+    RAISE NOTICE 'GERACAO DE DADOS - 24/7 CONTINUO';
     RAISE NOTICE '========================================';
     RAISE NOTICE 'Timestamp Sistema: %', CURRENT_TIMESTAMP AT TIME ZONE 'America/Sao_Paulo';
     RAISE NOTICE 'Periodo: % ate %', start_date, end_date;
     RAISE NOTICE 'Dispositivos: %', array_length(devices, 1);
     RAISE NOTICE 'Intervalo: 5 minutos';
-    RAISE NOTICE 'Modo: 24/7 (sem verificacao de dia da semana)';
+    RAISE NOTICE 'Modo: 24/7 TODOS OS DISPOSITIVOS';
     
     curr_time := start_date;
     
@@ -619,15 +619,17 @@ BEGIN
                 INSERT INTO temp_consumo VALUES (gen_random_uuid(), curr_time, corrente, tensao, potencia, device_id);
                 batch_size := batch_size + 1;
             
-            -- AR CONDICIONADO REUNIÃO (Horário comercial)
+            -- AR CONDICIONADO REUNIÃO (24/7 - variação por horário)
             ELSIF device_id = 'a0000000-0000-0000-0000-000000000502'::UUID THEN
                 IF hour_of_day BETWEEN 8 AND 18 THEN
                     potencia := 1200.0 + (random() * 300 - 150);
-                    tensao := 220.0 + (random() * 10 - 5);
-                    corrente := potencia / tensao;
-                    INSERT INTO temp_consumo VALUES (gen_random_uuid(), curr_time, corrente, tensao, potencia, device_id);
-                    batch_size := batch_size + 1;
+                ELSE
+                    potencia := 600.0 + (random() * 150 - 75);
                 END IF;
+                tensao := 220.0 + (random() * 10 - 5);
+                corrente := potencia / tensao;
+                INSERT INTO temp_consumo VALUES (gen_random_uuid(), curr_time, corrente, tensao, potencia, device_id);
+                batch_size := batch_size + 1;
             
             -- PCs DESENVOLVIMENTO (24/7 - variação menor à noite)
             ELSIF device_id IN ('a0000000-0000-0000-0000-000000000503'::UUID, 
@@ -655,11 +657,11 @@ BEGIN
                 INSERT INTO temp_consumo VALUES (gen_random_uuid(), curr_time, corrente, tensao, potencia, device_id);
                 batch_size := batch_size + 1;
             
-            -- TORNO CNC (Horário de produção - variação realista)
+            -- TORNO CNC (24/7 - variação realista)
             ELSIF device_id = 'a0000000-0000-0000-0000-000000000506'::UUID THEN
-                IF hour_of_day BETWEEN 6 AND 22 THEN
-                    DECLARE estado REAL := random();
-                    BEGIN
+                DECLARE estado REAL := random();
+                BEGIN
+                    IF hour_of_day BETWEEN 6 AND 22 THEN
                         IF estado < 0.15 THEN
                             potencia := 50.0 + (random() * 30);
                         ELSIF estado < 0.35 THEN
@@ -667,75 +669,96 @@ BEGIN
                         ELSE
                             potencia := 4200.0 + (random() * 800);
                         END IF;
-                    END;
+                    ELSE
+                        -- Madrugada: standby ou operação reduzida
+                        IF estado < 0.70 THEN
+                            potencia := 40.0 + (random() * 20);
+                        ELSE
+                            potencia := 800.0 + (random() * 300);
+                        END IF;
+                    END IF;
+                END;
+                tensao := 220.0 + (random() * 10 - 5);
+                corrente := potencia / tensao;
+                INSERT INTO temp_consumo VALUES (gen_random_uuid(), curr_time, corrente, tensao, potencia, device_id);
+                batch_size := batch_size + 1;
+            
+            -- PC RH (24/7 - maior uso comercial)
+            ELSIF device_id = 'a0000000-0000-0000-0000-000000000508'::UUID THEN
+                IF hour_of_day BETWEEN 8 AND 17 THEN
+                    potencia := 65.0 + (random() * 20);
                 ELSE
-                    potencia := 40.0 + (random() * 20);
+                    potencia := 25.0 + (random() * 10);
                 END IF;
                 tensao := 220.0 + (random() * 10 - 5);
                 corrente := potencia / tensao;
                 INSERT INTO temp_consumo VALUES (gen_random_uuid(), curr_time, corrente, tensao, potencia, device_id);
                 batch_size := batch_size + 1;
             
-            -- PC RH (Horário comercial)
-            ELSIF device_id = 'a0000000-0000-0000-0000-000000000508'::UUID THEN
-                IF hour_of_day BETWEEN 8 AND 17 THEN
-                    potencia := 65.0 + (random() * 20);
-                    tensao := 220.0 + (random() * 10 - 5);
-                    corrente := potencia / tensao;
-                    INSERT INTO temp_consumo VALUES (gen_random_uuid(), curr_time, corrente, tensao, potencia, device_id);
-                    batch_size := batch_size + 1;
-                END IF;
-            
-            -- IMPRESSORA RH (Uso esporádico)
+            -- IMPRESSORA RH (24/7 - uso reduzido fora do horário)
             ELSIF device_id = 'a0000000-0000-0000-0000-000000000509'::UUID THEN
-                IF hour_of_day BETWEEN 8 AND 17 AND random() < 0.12 THEN
-                    potencia := 400.0 + (random() * 100);
-                    tensao := 220.0 + (random() * 10 - 5);
-                    corrente := potencia / tensao;
-                    INSERT INTO temp_consumo VALUES (gen_random_uuid(), curr_time, corrente, tensao, potencia, device_id);
-                    batch_size := batch_size + 1;
+                IF hour_of_day BETWEEN 8 AND 17 THEN
+                    IF random() < 0.12 THEN
+                        potencia := 400.0 + (random() * 100);
+                    ELSE
+                        potencia := 15.0 + (random() * 5);
+                    END IF;
+                ELSE
+                    potencia := 8.0 + (random() * 4);
                 END IF;
+                tensao := 220.0 + (random() * 10 - 5);
+                corrente := potencia / tensao;
+                INSERT INTO temp_consumo VALUES (gen_random_uuid(), curr_time, corrente, tensao, potencia, device_id);
+                batch_size := batch_size + 1;
             
-            -- AR RH (Horário comercial)
+            -- AR RH (24/7 - reduzido à noite)
             ELSIF device_id = 'a0000000-0000-0000-0000-000000000510'::UUID THEN
                 IF hour_of_day BETWEEN 8 AND 17 THEN
                     potencia := 900.0 + (random() * 100);
-                    tensao := 220.0 + (random() * 10 - 5);
-                    corrente := potencia / tensao;
-                    INSERT INTO temp_consumo VALUES (gen_random_uuid(), curr_time, corrente, tensao, potencia, device_id);
-                    batch_size := batch_size + 1;
+                ELSE
+                    potencia := 300.0 + (random() * 80);
                 END IF;
+                tensao := 220.0 + (random() * 10 - 5);
+                corrente := potencia / tensao;
+                INSERT INTO temp_consumo VALUES (gen_random_uuid(), curr_time, corrente, tensao, potencia, device_id);
+                batch_size := batch_size + 1;
             
-            -- PCs CONTABILIDADE (Horário comercial estendido)
+            -- PCs CONTABILIDADE (24/7 - comercial estendido)
             ELSIF device_id IN ('a0000000-0000-0000-0000-000000000511'::UUID,
                                'a0000000-0000-0000-0000-000000000512'::UUID) THEN
                 IF hour_of_day BETWEEN 8 AND 19 THEN
                     potencia := 340.0 + (random() * 80);
-                    tensao := 220.0 + (random() * 10 - 5);
-                    corrente := potencia / tensao;
-                    INSERT INTO temp_consumo VALUES (gen_random_uuid(), curr_time, corrente, tensao, potencia, device_id);
-                    batch_size := batch_size + 1;
+                ELSE
+                    potencia := 80.0 + (random() * 30);
                 END IF;
+                tensao := 220.0 + (random() * 10 - 5);
+                corrente := potencia / tensao;
+                INSERT INTO temp_consumo VALUES (gen_random_uuid(), curr_time, corrente, tensao, potencia, device_id);
+                batch_size := batch_size + 1;
             
-            -- MONITOR EXTRA (Horário comercial)
+            -- MONITOR EXTRA (24/7 - comercial)
             ELSIF device_id = 'a0000000-0000-0000-0000-000000000513'::UUID THEN
                 IF hour_of_day BETWEEN 8 AND 18 THEN
                     potencia := 35.0 + (random() * 5);
-                    tensao := 220.0 + (random() * 10 - 5);
-                    corrente := potencia / tensao;
-                    INSERT INTO temp_consumo VALUES (gen_random_uuid(), curr_time, corrente, tensao, potencia, device_id);
-                    batch_size := batch_size + 1;
+                ELSE
+                    potencia := 10.0 + (random() * 3);
                 END IF;
+                tensao := 220.0 + (random() * 10 - 5);
+                corrente := potencia / tensao;
+                INSERT INTO temp_consumo VALUES (gen_random_uuid(), curr_time, corrente, tensao, potencia, device_id);
+                batch_size := batch_size + 1;
             
-            -- ILUMINAÇÃO ALMOXARIFADO (Horário comercial estendido)
+            -- ILUMINAÇÃO ALMOXARIFADO (24/7)
             ELSIF device_id = 'a0000000-0000-0000-0000-000000000514'::UUID THEN
                 IF hour_of_day BETWEEN 7 AND 19 THEN
                     potencia := 42.0 + (random() * 4);
-                    tensao := 220.0 + (random() * 10 - 5);
-                    corrente := potencia / tensao;
-                    INSERT INTO temp_consumo VALUES (gen_random_uuid(), curr_time, corrente, tensao, potencia, device_id);
-                    batch_size := batch_size + 1;
+                ELSE
+                    potencia := 18.0 + (random() * 3);
                 END IF;
+                tensao := 220.0 + (random() * 10 - 5);
+                corrente := potencia / tensao;
+                INSERT INTO temp_consumo VALUES (gen_random_uuid(), curr_time, corrente, tensao, potencia, device_id);
+                batch_size := batch_size + 1;
             
             END IF;
             
