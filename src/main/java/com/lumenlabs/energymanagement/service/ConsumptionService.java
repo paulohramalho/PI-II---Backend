@@ -13,23 +13,31 @@ import java.util.Map;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import com.lumenlabs.energymanagement.dto.consumption.ConsumptionEvolutionResponse;
 import com.lumenlabs.energymanagement.dto.consumption.ConsumptionRatioResponse;
 import com.lumenlabs.energymanagement.dto.consumption.DataPoint;
+import com.lumenlabs.energymanagement.dto.consumption.DeviceConsumptionDetailResponse;
 import com.lumenlabs.energymanagement.dto.consumption.RatioData;
 import com.lumenlabs.energymanagement.dto.consumption.SeriesData;
 import com.lumenlabs.energymanagement.dto.consumption.Statistics;
 import com.lumenlabs.energymanagement.enums.Granularity;
 import com.lumenlabs.energymanagement.enums.ResourceType;
+import com.lumenlabs.energymanagement.model.DeviceRoom;
 import com.lumenlabs.energymanagement.repository.ConsumptionRepository;
+import com.lumenlabs.energymanagement.repository.DeviceRoomRepository;
 
 @Service
 public class ConsumptionService {
 
 	@Autowired
 	private ConsumptionRepository consumptionRepository;
+	
+	@Autowired
+	private DeviceRoomRepository deviceRoomRepository;
 
 	public ConsumptionEvolutionResponse getEvolution(UUID empresaId, ResourceType resourceType, LocalDateTime startDate,
 			LocalDateTime endDate, UUID setorId, UUID salaId) {
@@ -425,5 +433,334 @@ public class ConsumptionService {
 		if (value == null)
 			return defaultValue;
 		return value.toString();
+	}
+	
+	public DeviceConsumptionDetailResponse getDeviceDetail(
+	        UUID empresaId, 
+	        UUID deviceRoomId, 
+	        LocalDateTime startDate,
+	        LocalDateTime endDate) {
+	    
+	    // Determinar granularidade
+	    Granularity granularity = determineGranularity(startDate, endDate);
+	    
+	    // Buscar informações do dispositivo
+	    DeviceRoom deviceInfo = deviceRoomRepository.findByCompanyIdAndId(empresaId, deviceRoomId)
+	            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
+	                    "Associação entre dispositivo e sala não encontrada"));
+	    
+	    if (deviceInfo == null) {
+	        throw new RuntimeException("Dispositivo não encontrado ou não pertence à empresa");
+	    }
+	    
+	    String deviceName = safeGetString(deviceInfo.getDevice().getName(), "Dispositivo Desconhecido");
+	    String roomName = safeGetString(deviceInfo.getRoom().getName(), "Sala Desconhecida");
+	    
+	    // Buscar dados baseado na granularidade
+	    List<Object[]> rawData = (granularity == Granularity.HOURLY)
+	        ? consumptionRepository.findDeviceDetailHourly(empresaId, deviceRoomId, startDate, endDate)
+	        : consumptionRepository.findDeviceDetailDaily(empresaId, deviceRoomId, startDate, endDate);
+	    
+	    // Processar dados
+	    DeviceConsumptionDetailResponse.VoltageData voltageData = processVoltageData(rawData, granularity);
+	    DeviceConsumptionDetailResponse.CurrentData currentData = processCurrentData(rawData, granularity);
+	    DeviceConsumptionDetailResponse.PowerData powerData = processPowerData(rawData, granularity);
+	    
+	    return DeviceConsumptionDetailResponse.builder()
+	        .deviceRoomId(deviceRoomId)
+	        .deviceName(deviceName)
+	        .roomName(roomName)
+	        .startDate(startDate)
+	        .endDate(endDate)
+	        .granularity(granularity.name())
+	        .voltage(voltageData)
+	        .current(currentData)
+	        .power(powerData)
+	        .build();
+	}
+
+	private DeviceConsumptionDetailResponse.VoltageData processVoltageData(
+	        List<Object[]> rawData, 
+	        Granularity granularity) {
+	    
+	    List<DeviceConsumptionDetailResponse.DataPoint> points = new ArrayList<>();
+	    
+	    if (granularity == Granularity.WEEKLY || granularity == Granularity.MONTHLY) {
+	        points = aggregateVoltagePoints(rawData, granularity);
+	    } else {
+	        for (Object[] row : rawData) {
+	            LocalDateTime timestamp = extractTimestamp(row[0]);
+	            if (timestamp == null) continue;
+	            
+	            DeviceConsumptionDetailResponse.DataPoint point = 
+	                DeviceConsumptionDetailResponse.DataPoint.builder()
+	                    .timestamp(timestamp)
+	                    .avg(safeGetDouble(row[1], 0.0))
+	                    .max(safeGetDouble(row[2], 0.0))
+	                    .min(safeGetDouble(row[3], 0.0))
+	                    .value(safeGetDouble(row[1], 0.0)) // avg como value padrão
+	                    .build();
+	            
+	            points.add(point);
+	        }
+	    }
+	    
+	    DeviceConsumptionDetailResponse.Statistics stats = calculateDetailStatistics(points);
+	    
+	    return DeviceConsumptionDetailResponse.VoltageData.builder()
+	        .points(points)
+	        .statistics(stats)
+	        .build();
+	}
+
+	private DeviceConsumptionDetailResponse.CurrentData processCurrentData(
+	        List<Object[]> rawData, 
+	        Granularity granularity) {
+	    
+	    List<DeviceConsumptionDetailResponse.DataPoint> points = new ArrayList<>();
+	    
+	    if (granularity == Granularity.WEEKLY || granularity == Granularity.MONTHLY) {
+	        points = aggregateCurrentPoints(rawData, granularity);
+	    } else {
+	        for (Object[] row : rawData) {
+	            LocalDateTime timestamp = extractTimestamp(row[0]);
+	            if (timestamp == null) continue;
+	            
+	            DeviceConsumptionDetailResponse.DataPoint point = 
+	                DeviceConsumptionDetailResponse.DataPoint.builder()
+	                    .timestamp(timestamp)
+	                    .avg(safeGetDouble(row[4], 0.0))
+	                    .max(safeGetDouble(row[5], 0.0))
+	                    .min(safeGetDouble(row[6], 0.0))
+	                    .value(safeGetDouble(row[4], 0.0))
+	                    .build();
+	            
+	            points.add(point);
+	        }
+	    }
+	    
+	    DeviceConsumptionDetailResponse.Statistics stats = calculateDetailStatistics(points);
+	    
+	    return DeviceConsumptionDetailResponse.CurrentData.builder()
+	        .points(points)
+	        .statistics(stats)
+	        .build();
+	}
+
+	private DeviceConsumptionDetailResponse.PowerData processPowerData(
+	        List<Object[]> rawData, 
+	        Granularity granularity) {
+	    
+	    List<DeviceConsumptionDetailResponse.DataPoint> points = new ArrayList<>();
+	    
+	    if (granularity == Granularity.WEEKLY || granularity == Granularity.MONTHLY) {
+	        points = aggregatePowerPoints(rawData, granularity);
+	    } else {
+	        for (Object[] row : rawData) {
+	            LocalDateTime timestamp = extractTimestamp(row[0]);
+	            if (timestamp == null) continue;
+	            
+	            DeviceConsumptionDetailResponse.DataPoint point = 
+	                DeviceConsumptionDetailResponse.DataPoint.builder()
+	                    .timestamp(timestamp)
+	                    .avg(safeGetDouble(row[7], 0.0))
+	                    .max(safeGetDouble(row[8], 0.0))
+	                    .min(safeGetDouble(row[9], 0.0))
+	                    .value(safeGetDouble(row[7], 0.0))
+	                    .build();
+	            
+	            points.add(point);
+	        }
+	    }
+	    
+	    DeviceConsumptionDetailResponse.Statistics stats = calculateDetailStatistics(points);
+	    
+	    return DeviceConsumptionDetailResponse.PowerData.builder()
+	        .points(points)
+	        .statistics(stats)
+	        .build();
+	}
+
+	// Métodos de agregação para WEEKLY e MONTHLY
+	private List<DeviceConsumptionDetailResponse.DataPoint> aggregateVoltagePoints(
+	        List<Object[]> rawData, 
+	        Granularity granularity) {
+	    
+	    Map<LocalDateTime, List<Object[]>> grouped = groupByPeriod(rawData, granularity);
+	    List<DeviceConsumptionDetailResponse.DataPoint> points = new ArrayList<>();
+	    
+	    for (Map.Entry<LocalDateTime, List<Object[]>> entry : grouped.entrySet()) {
+	        double sumAvg = 0.0;
+	        double maxValue = Double.NEGATIVE_INFINITY;
+	        double minValue = Double.POSITIVE_INFINITY;
+	        int count = 0;
+	        
+	        for (Object[] row : entry.getValue()) {
+	            Double avg = safeGetDouble(row[1], null);
+	            Double max = safeGetDouble(row[2], null);
+	            Double min = safeGetDouble(row[3], null);
+	            
+	            if (avg != null) {
+	                sumAvg += avg;
+	                count++;
+	            }
+	            if (max != null && max > maxValue) maxValue = max;
+	            if (min != null && min < minValue) minValue = min;
+	        }
+	        
+	        if (count > 0) {
+	            DeviceConsumptionDetailResponse.DataPoint point = 
+	                DeviceConsumptionDetailResponse.DataPoint.builder()
+	                    .timestamp(entry.getKey())
+	                    .avg(sumAvg / count)
+	                    .max(Double.isInfinite(maxValue) ? 0.0 : maxValue)
+	                    .min(Double.isInfinite(minValue) ? 0.0 : minValue)
+	                    .value(sumAvg / count)
+	                    .build();
+	            points.add(point);
+	        }
+	    }
+	    
+	    return points;
+	}
+
+	private List<DeviceConsumptionDetailResponse.DataPoint> aggregateCurrentPoints(
+	        List<Object[]> rawData, 
+	        Granularity granularity) {
+	    
+	    Map<LocalDateTime, List<Object[]>> grouped = groupByPeriod(rawData, granularity);
+	    List<DeviceConsumptionDetailResponse.DataPoint> points = new ArrayList<>();
+	    
+	    for (Map.Entry<LocalDateTime, List<Object[]>> entry : grouped.entrySet()) {
+	        double sumAvg = 0.0;
+	        double maxValue = Double.NEGATIVE_INFINITY;
+	        double minValue = Double.POSITIVE_INFINITY;
+	        int count = 0;
+	        
+	        for (Object[] row : entry.getValue()) {
+	            Double avg = safeGetDouble(row[4], null);
+	            Double max = safeGetDouble(row[5], null);
+	            Double min = safeGetDouble(row[6], null);
+	            
+	            if (avg != null) {
+	                sumAvg += avg;
+	                count++;
+	            }
+	            if (max != null && max > maxValue) maxValue = max;
+	            if (min != null && min < minValue) minValue = min;
+	        }
+	        
+	        if (count > 0) {
+	            DeviceConsumptionDetailResponse.DataPoint point = 
+	                DeviceConsumptionDetailResponse.DataPoint.builder()
+	                    .timestamp(entry.getKey())
+	                    .avg(sumAvg / count)
+	                    .max(Double.isInfinite(maxValue) ? 0.0 : maxValue)
+	                    .min(Double.isInfinite(minValue) ? 0.0 : minValue)
+	                    .value(sumAvg / count)
+	                    .build();
+	            points.add(point);
+	        }
+	    }
+	    
+	    return points;
+	}
+
+	private List<DeviceConsumptionDetailResponse.DataPoint> aggregatePowerPoints(
+	        List<Object[]> rawData, 
+	        Granularity granularity) {
+	    
+	    Map<LocalDateTime, List<Object[]>> grouped = groupByPeriod(rawData, granularity);
+	    List<DeviceConsumptionDetailResponse.DataPoint> points = new ArrayList<>();
+	    
+	    for (Map.Entry<LocalDateTime, List<Object[]>> entry : grouped.entrySet()) {
+	        double sumAvg = 0.0;
+	        double maxValue = Double.NEGATIVE_INFINITY;
+	        double minValue = Double.POSITIVE_INFINITY;
+	        int count = 0;
+	        
+	        for (Object[] row : entry.getValue()) {
+	            Double avg = safeGetDouble(row[7], null);
+	            Double max = safeGetDouble(row[8], null);
+	            Double min = safeGetDouble(row[9], null);
+	            
+	            if (avg != null) {
+	                sumAvg += avg;
+	                count++;
+	            }
+	            if (max != null && max > maxValue) maxValue = max;
+	            if (min != null && min < minValue) minValue = min;
+	        }
+	        
+	        if (count > 0) {
+	            DeviceConsumptionDetailResponse.DataPoint point = 
+	                DeviceConsumptionDetailResponse.DataPoint.builder()
+	                    .timestamp(entry.getKey())
+	                    .avg(sumAvg / count)
+	                    .max(Double.isInfinite(maxValue) ? 0.0 : maxValue)
+	                    .min(Double.isInfinite(minValue) ? 0.0 : minValue)
+	                    .value(sumAvg / count)
+	                    .build();
+	            points.add(point);
+	        }
+	    }
+	    
+	    return points;
+	}
+
+	private Map<LocalDateTime, List<Object[]>> groupByPeriod(
+	        List<Object[]> rawData, 
+	        Granularity granularity) {
+	    
+	    Map<LocalDateTime, List<Object[]>> grouped = new HashMap<>();
+	    
+	    for (Object[] row : rawData) {
+	        LocalDateTime timestamp = extractTimestamp(row[0]);
+	        if (timestamp == null) continue;
+	        
+	        LocalDateTime bucketKey;
+	        if (granularity == Granularity.WEEKLY) {
+	            bucketKey = timestamp.truncatedTo(ChronoUnit.DAYS)
+	                .minusDays(timestamp.getDayOfWeek().getValue() - 1);
+	        } else { // MONTHLY
+	            bucketKey = timestamp.withDayOfMonth(1).truncatedTo(ChronoUnit.DAYS);
+	        }
+	        
+	        grouped.computeIfAbsent(bucketKey, k -> new ArrayList<>()).add(row);
+	    }
+	    
+	    return grouped;
+	}
+
+	private DeviceConsumptionDetailResponse.Statistics calculateDetailStatistics(
+	        List<DeviceConsumptionDetailResponse.DataPoint> points) {
+	    
+	    if (points == null || points.isEmpty()) {
+	        return DeviceConsumptionDetailResponse.Statistics.builder()
+	            .total(0.0)
+	            .average(0.0)
+	            .maximum(0.0)
+	            .minimum(0.0)
+	            .totalReadings(0L)
+	            .build();
+	    }
+	    
+	    double sum = 0.0;
+	    double max = Double.NEGATIVE_INFINITY;
+	    double min = Double.POSITIVE_INFINITY;
+	    
+	    for (DeviceConsumptionDetailResponse.DataPoint point : points) {
+	        sum += point.getValue();
+	        if (point.getMax() > max) max = point.getMax();
+	        if (point.getMin() < min) min = point.getMin();
+	    }
+	    
+	    return DeviceConsumptionDetailResponse.Statistics.builder()
+	        .total(sum)
+	        .average(sum / points.size())
+	        .maximum(Double.isInfinite(max) ? 0.0 : max)
+	        .minimum(Double.isInfinite(min) ? 0.0 : min)
+	        .totalReadings((long) points.size())
+	        .build();
 	}
 }

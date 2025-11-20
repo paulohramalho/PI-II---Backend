@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.lumenlabs.energymanagement.dto.consumption.ConsumptionEvolutionResponse;
 import com.lumenlabs.energymanagement.dto.consumption.ConsumptionRatioResponse;
+import com.lumenlabs.energymanagement.dto.consumption.DeviceConsumptionDetailResponse;
 import com.lumenlabs.energymanagement.enums.ResourceType;
 import com.lumenlabs.energymanagement.service.ConsumptionService;
 import com.lumenlabs.energymanagement.util.SecurityUtils;
@@ -97,5 +98,30 @@ public class ConsumptionController {
 		);
 		
 		return ResponseEntity.ok(response);
+	}
+	
+	@GetMapping("/device/detail")
+	@Operation(
+	    summary = "Obter detalhes de consumo de um dispositivo",
+	    description = "Retorna os dados de Tensão, Corrente e Potência Ativa de um dispositivo específico"
+	)
+	public ResponseEntity<DeviceConsumptionDetailResponse> getDeviceDetail(
+	        @Parameter(description = "ID do vínculo dispositivo-sala", required = true)
+	        @RequestParam UUID deviceRoomId,
+	        
+	        @Parameter(description = "Data de início", required = true, example = "2024-01-01T00:00:00")
+	        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime start,
+	        
+	        @Parameter(description = "Data de fim", required = true, example = "2024-01-31T23:59:59")
+	        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime end) {
+	    
+	    DeviceConsumptionDetailResponse response = consumptionService.getDeviceDetail(
+	        securityUtils.getLoggedUserCompany().getId(),
+	        deviceRoomId,
+	        start,
+	        end
+	    );
+	    
+	    return ResponseEntity.ok(response);
 	}
 }

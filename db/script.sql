@@ -539,21 +539,19 @@ INSERT INTO dispositivo_sala (id, apelido, tempo_medio_hora, fk_sala, fk_disposi
 ('a0000000-0000-0000-0000-000000000514', 'Iluminação Almox', 12.0, 'a0000000-0000-0000-0000-000000000208', 'a0000000-0000-0000-0000-000000000405', 'a0000000-0000-0000-0000-000000000001');
 
 -- ========================================
--- GERAR DADOS DE CONSUMO - TIMESTAMP DO SISTEMA
+-- GERAR DADOS DE CONSUMO - OTIMIZADO UTC-3
 -- ========================================
--- Gera dados realistas dos últimos 180 dias (6 meses)
--- USANDO CURRENT_TIMESTAMP para garantir sincronia com o sistema
+-- Gera dados dos últimos 180 dias
+-- TIMEZONE: America/Sao_Paulo (UTC-3)
+-- Intervalo: 5 minutos (12 registros/hora)
+-- 24/7 para todos os dispositivos
 
 DO $$
 DECLARE
-    start_date TIMESTAMPTZ := CURRENT_TIMESTAMP - INTERVAL '180 days';
-    end_date TIMESTAMPTZ := CURRENT_TIMESTAMP;
+    start_date TIMESTAMPTZ := (CURRENT_TIMESTAMP AT TIME ZONE 'America/Sao_Paulo') - INTERVAL '180 days';
+    end_date TIMESTAMPTZ := (CURRENT_TIMESTAMP AT TIME ZONE 'America/Sao_Paulo');
     curr_time TIMESTAMPTZ;
     hour_of_day INTEGER;
-    day_of_week INTEGER;
-    is_today BOOLEAN;
-    is_yesterday BOOLEAN;
-    is_this_week BOOLEAN;
     
     devices CONSTANT UUID[] := ARRAY[
         'a0000000-0000-0000-0000-000000000501'::UUID, -- Ar Servidores
@@ -579,15 +577,17 @@ DECLARE
     total_inserted INTEGER := 0;
     batch_size INTEGER := 0;
     batch_limit INTEGER := 1000;
+    day_counter INTEGER := 0;
     
 BEGIN
     RAISE NOTICE '========================================';
-    RAISE NOTICE 'INICIANDO GERACAO DE DADOS DE CONSUMO';
+    RAISE NOTICE 'GERACAO DE DADOS - UTC-3 (BR)';
     RAISE NOTICE '========================================';
-    RAISE NOTICE 'Timestamp Sistema: %', CURRENT_TIMESTAMP;
+    RAISE NOTICE 'Timestamp Sistema: %', CURRENT_TIMESTAMP AT TIME ZONE 'America/Sao_Paulo';
     RAISE NOTICE 'Periodo: % ate %', start_date, end_date;
-    RAISE NOTICE 'Dispositivos: % dispositivos', array_length(devices, 1);
-    RAISE NOTICE 'Intervalo: 5 minutos (12 registros/hora)';
+    RAISE NOTICE 'Dispositivos: %', array_length(devices, 1);
+    RAISE NOTICE 'Intervalo: 5 minutos';
+    RAISE NOTICE 'Modo: 24/7 (sem verificacao de dia da semana)';
     
     curr_time := start_date;
     
@@ -601,16 +601,11 @@ BEGIN
     ) ON COMMIT DROP;
     
     WHILE curr_time <= end_date LOOP
-        hour_of_day := EXTRACT(HOUR FROM curr_time);
-        day_of_week := EXTRACT(DOW FROM curr_time);
-        
-        is_today := DATE(curr_time) = DATE(CURRENT_TIMESTAMP);
-        is_yesterday := DATE(curr_time) = DATE(CURRENT_TIMESTAMP - INTERVAL '1 day');
-        is_this_week := DATE(curr_time) >= DATE(DATE_TRUNC('week', CURRENT_TIMESTAMP));
+        hour_of_day := EXTRACT(HOUR FROM curr_time AT TIME ZONE 'America/Sao_Paulo');
         
         FOREACH device_id IN ARRAY devices LOOP
             
-            -- AR CONDICIONADO SERVIDORES (24/7)
+            -- AR CONDICIONADO SERVIDORES (24/7 - Alta potência)
             IF device_id = 'a0000000-0000-0000-0000-000000000501'::UUID THEN
                 IF hour_of_day BETWEEN 14 AND 16 THEN
                     potencia := 2000.0 + (random() * 200 - 100);
@@ -624,133 +619,117 @@ BEGIN
                 INSERT INTO temp_consumo VALUES (gen_random_uuid(), curr_time, corrente, tensao, potencia, device_id);
                 batch_size := batch_size + 1;
             
-            -- AR CONDICIONADO REUNIÃO
+            -- AR CONDICIONADO REUNIÃO (Horário comercial)
             ELSIF device_id = 'a0000000-0000-0000-0000-000000000502'::UUID THEN
-                IF day_of_week BETWEEN 1 AND 5 AND hour_of_day BETWEEN 8 AND 18 THEN
-                    IF (hour_of_day BETWEEN 10 AND 12) OR (hour_of_day BETWEEN 14 AND 17) THEN
-                        potencia := 1400.0 + (random() * 250 - 125);
-                    ELSE
-                        potencia := 1000.0 + (random() * 200 - 100);
-                    END IF;
+                IF hour_of_day BETWEEN 8 AND 18 THEN
+                    potencia := 1200.0 + (random() * 300 - 150);
                     tensao := 220.0 + (random() * 10 - 5);
                     corrente := potencia / tensao;
                     INSERT INTO temp_consumo VALUES (gen_random_uuid(), curr_time, corrente, tensao, potencia, device_id);
                     batch_size := batch_size + 1;
                 END IF;
             
-            -- PCs DESENVOLVIMENTO
+            -- PCs DESENVOLVIMENTO (24/7 - variação menor à noite)
             ELSIF device_id IN ('a0000000-0000-0000-0000-000000000503'::UUID, 
                                'a0000000-0000-0000-0000-000000000504'::UUID) THEN
-                IF day_of_week BETWEEN 1 AND 5 AND hour_of_day BETWEEN 7 AND 19 THEN
-                    IF (hour_of_day BETWEEN 9 AND 12) OR (hour_of_day BETWEEN 14 AND 18) THEN
-                        IF random() < 0.15 THEN
-                            potencia := 400.0 + (random() * 100);
-                        ELSE
-                            potencia := 280.0 + (random() * 60);
-                        END IF;
-                    ELSIF hour_of_day = 7 OR hour_of_day = 19 THEN
-                        potencia := 180.0 + (random() * 40);
-                    ELSE
-                        potencia := 150.0 + (random() * 30);
-                    END IF;
-                    tensao := 220.0 + (random() * 10 - 5);
-                    corrente := potencia / tensao;
-                    INSERT INTO temp_consumo VALUES (gen_random_uuid(), curr_time, corrente, tensao, potencia, device_id);
-                    batch_size := batch_size + 1;
+                IF hour_of_day BETWEEN 7 AND 19 THEN
+                    potencia := 320.0 + (random() * 80 - 40);
+                ELSE
+                    potencia := 150.0 + (random() * 50 - 25);
                 END IF;
+                tensao := 220.0 + (random() * 10 - 5);
+                corrente := potencia / tensao;
+                INSERT INTO temp_consumo VALUES (gen_random_uuid(), curr_time, corrente, tensao, potencia, device_id);
+                batch_size := batch_size + 1;
             
-            -- ILUMINAÇÃO PRODUÇÃO
+            -- ILUMINAÇÃO PRODUÇÃO (24/7)
             ELSIF device_id IN ('a0000000-0000-0000-0000-000000000505'::UUID,
                                'a0000000-0000-0000-0000-000000000507'::UUID) THEN
-                IF day_of_week BETWEEN 1 AND 5 AND hour_of_day BETWEEN 6 AND 22 THEN
-                    IF hour_of_day BETWEEN 6 AND 8 OR hour_of_day BETWEEN 18 AND 22 THEN
-                        potencia := 45.0 + (random() * 5);
-                    ELSE
-                        potencia := 38.0 + (random() * 4);
-                    END IF;
-                    tensao := 220.0 + (random() * 10 - 5);
-                    corrente := potencia / tensao;
-                    INSERT INTO temp_consumo VALUES (gen_random_uuid(), curr_time, corrente, tensao, potencia, device_id);
-                    batch_size := batch_size + 1;
+                IF hour_of_day BETWEEN 6 AND 22 THEN
+                    potencia := 42.0 + (random() * 4);
+                ELSE
+                    potencia := 20.0 + (random() * 3);
                 END IF;
+                tensao := 220.0 + (random() * 10 - 5);
+                corrente := potencia / tensao;
+                INSERT INTO temp_consumo VALUES (gen_random_uuid(), curr_time, corrente, tensao, potencia, device_id);
+                batch_size := batch_size + 1;
             
-            -- TORNO CNC
+            -- TORNO CNC (Horário de produção - variação realista)
             ELSIF device_id = 'a0000000-0000-0000-0000-000000000506'::UUID THEN
-                IF day_of_week BETWEEN 1 AND 5 AND hour_of_day BETWEEN 6 AND 22 THEN
+                IF hour_of_day BETWEEN 6 AND 22 THEN
                     DECLARE estado REAL := random();
                     BEGIN
                         IF estado < 0.15 THEN
-                            potencia := 50.0 + (random() * 20);
+                            potencia := 50.0 + (random() * 30);
                         ELSIF estado < 0.35 THEN
-                            potencia := 800.0 + (random() * 200);
+                            potencia := 900.0 + (random() * 200);
                         ELSE
-                            IF random() < 0.4 THEN
-                                potencia := 3000.0 + (random() * 500);
-                            ELSE
-                                potencia := 4800.0 + (random() * 800);
-                            END IF;
+                            potencia := 4200.0 + (random() * 800);
                         END IF;
                     END;
-                    tensao := 220.0 + (random() * 10 - 5);
-                    corrente := potencia / tensao;
-                    INSERT INTO temp_consumo VALUES (gen_random_uuid(), curr_time, corrente, tensao, potencia, device_id);
-                    batch_size := batch_size + 1;
+                ELSE
+                    potencia := 40.0 + (random() * 20);
                 END IF;
+                tensao := 220.0 + (random() * 10 - 5);
+                corrente := potencia / tensao;
+                INSERT INTO temp_consumo VALUES (gen_random_uuid(), curr_time, corrente, tensao, potencia, device_id);
+                batch_size := batch_size + 1;
             
-            -- PC RH
+            -- PC RH (Horário comercial)
             ELSIF device_id = 'a0000000-0000-0000-0000-000000000508'::UUID THEN
-                IF day_of_week BETWEEN 1 AND 5 AND hour_of_day BETWEEN 8 AND 17 THEN
-                    potencia := 50.0 + (random() * 30);
+                IF hour_of_day BETWEEN 8 AND 17 THEN
+                    potencia := 65.0 + (random() * 20);
                     tensao := 220.0 + (random() * 10 - 5);
                     corrente := potencia / tensao;
                     INSERT INTO temp_consumo VALUES (gen_random_uuid(), curr_time, corrente, tensao, potencia, device_id);
                     batch_size := batch_size + 1;
                 END IF;
             
-            -- IMPRESSORA RH
+            -- IMPRESSORA RH (Uso esporádico)
             ELSIF device_id = 'a0000000-0000-0000-0000-000000000509'::UUID THEN
-                IF day_of_week BETWEEN 1 AND 5 AND hour_of_day BETWEEN 8 AND 17 AND random() < 0.1 THEN
-                    potencia := 350.0 + (random() * 100);
+                IF hour_of_day BETWEEN 8 AND 17 AND random() < 0.12 THEN
+                    potencia := 400.0 + (random() * 100);
                     tensao := 220.0 + (random() * 10 - 5);
                     corrente := potencia / tensao;
                     INSERT INTO temp_consumo VALUES (gen_random_uuid(), curr_time, corrente, tensao, potencia, device_id);
                     batch_size := batch_size + 1;
                 END IF;
             
-            -- AR RH
+            -- AR RH (Horário comercial)
             ELSIF device_id = 'a0000000-0000-0000-0000-000000000510'::UUID THEN
-                IF day_of_week BETWEEN 1 AND 5 AND hour_of_day BETWEEN 8 AND 17 THEN
-                    potencia := 850.0 + (random() * 100);
+                IF hour_of_day BETWEEN 8 AND 17 THEN
+                    potencia := 900.0 + (random() * 100);
                     tensao := 220.0 + (random() * 10 - 5);
                     corrente := potencia / tensao;
                     INSERT INTO temp_consumo VALUES (gen_random_uuid(), curr_time, corrente, tensao, potencia, device_id);
                     batch_size := batch_size + 1;
                 END IF;
             
-            -- PCs CONTABILIDADE
+            -- PCs CONTABILIDADE (Horário comercial estendido)
             ELSIF device_id IN ('a0000000-0000-0000-0000-000000000511'::UUID,
                                'a0000000-0000-0000-0000-000000000512'::UUID) THEN
-                IF day_of_week BETWEEN 1 AND 5 AND hour_of_day BETWEEN 8 AND 18 THEN
-                    potencia := 300.0 + (random() * 80);
+                IF hour_of_day BETWEEN 8 AND 19 THEN
+                    potencia := 340.0 + (random() * 80);
                     tensao := 220.0 + (random() * 10 - 5);
                     corrente := potencia / tensao;
                     INSERT INTO temp_consumo VALUES (gen_random_uuid(), curr_time, corrente, tensao, potencia, device_id);
                     batch_size := batch_size + 1;
                 END IF;
             
-            -- MONITOR EXTRA
+            -- MONITOR EXTRA (Horário comercial)
             ELSIF device_id = 'a0000000-0000-0000-0000-000000000513'::UUID THEN
-                IF day_of_week BETWEEN 1 AND 5 AND hour_of_day BETWEEN 8 AND 18 THEN
-                    potencia := 32.0 + (random() * 6);
+                IF hour_of_day BETWEEN 8 AND 18 THEN
+                    potencia := 35.0 + (random() * 5);
                     tensao := 220.0 + (random() * 10 - 5);
                     corrente := potencia / tensao;
                     INSERT INTO temp_consumo VALUES (gen_random_uuid(), curr_time, corrente, tensao, potencia, device_id);
                     batch_size := batch_size + 1;
                 END IF;
             
-            -- ILUMINAÇÃO ALMOXARIFADO
+            -- ILUMINAÇÃO ALMOXARIFADO (Horário comercial estendido)
             ELSIF device_id = 'a0000000-0000-0000-0000-000000000514'::UUID THEN
-                IF day_of_week BETWEEN 1 AND 5 AND hour_of_day BETWEEN 7 AND 18 THEN
+                IF hour_of_day BETWEEN 7 AND 19 THEN
                     potencia := 42.0 + (random() * 4);
                     tensao := 220.0 + (random() * 10 - 5);
                     corrente := potencia / tensao;
@@ -762,6 +741,7 @@ BEGIN
             
         END LOOP;
         
+        -- Inserir em lotes
         IF batch_size >= batch_limit THEN
             INSERT INTO consumo (id, event_time, corrente, tensao, potencia_ativa, fk_dispositivo_sala)
             SELECT * FROM temp_consumo
@@ -772,22 +752,20 @@ BEGIN
             batch_size := 0;
         END IF;
         
+        -- Avançar 5 minutos
         curr_time := curr_time + INTERVAL '5 minutes';
         
+        -- Log a cada dia
         IF EXTRACT(HOUR FROM curr_time) = 0 AND EXTRACT(MINUTE FROM curr_time) = 0 THEN
-            IF is_today THEN
-                RAISE NOTICE '[HOJE] %', DATE(curr_time - INTERVAL '1 day');
-            ELSIF is_yesterday THEN
-                RAISE NOTICE '[ONTEM] %', DATE(curr_time - INTERVAL '1 day');
-            ELSIF is_this_week THEN
-                RAISE NOTICE '[ESTA SEMANA] %', DATE(curr_time - INTERVAL '1 day');
-            ELSIF EXTRACT(DAY FROM curr_time) = 1 THEN
-                RAISE NOTICE '[MES] %', TO_CHAR(curr_time - INTERVAL '1 day', 'Mon/YYYY');
+            day_counter := day_counter + 1;
+            IF day_counter % 10 = 0 THEN
+                RAISE NOTICE 'Progresso: % dias (% registros)', day_counter, total_inserted;
             END IF;
         END IF;
         
     END LOOP;
     
+    -- Inserir registros restantes
     IF batch_size > 0 THEN
         INSERT INTO consumo (id, event_time, corrente, tensao, potencia_ativa, fk_dispositivo_sala)
         SELECT * FROM temp_consumo
@@ -797,17 +775,18 @@ BEGIN
     END IF;
     
     RAISE NOTICE '========================================';
-    RAISE NOTICE 'GERACAO CONCLUIDA COM SUCESSO!';
+    RAISE NOTICE 'GERACAO CONCLUIDA!';
     RAISE NOTICE '========================================';
-    RAISE NOTICE 'Timestamp Final Sistema: %', CURRENT_TIMESTAMP;
+    RAISE NOTICE 'Timestamp Final: %', CURRENT_TIMESTAMP AT TIME ZONE 'America/Sao_Paulo';
     RAISE NOTICE 'Registros inseridos: %', total_inserted;
-    RAISE NOTICE 'Periodo: % dias', EXTRACT(DAY FROM (end_date - start_date));
+    RAISE NOTICE 'Dias processados: %', EXTRACT(DAY FROM (end_date - start_date));
     RAISE NOTICE 'Dispositivos: %', array_length(devices, 1);
+    RAISE NOTICE 'Media de registros/dia: %', total_inserted / NULLIF(EXTRACT(DAY FROM (end_date - start_date)), 0);
     
 END $$;
 
 -- ========================================
--- 10. VERIFICAR DADOS INSERIDOS
+-- VERIFICAR DADOS INSERIDOS
 -- ========================================
 
 DO $$
@@ -817,25 +796,35 @@ DECLARE
     max_date TIMESTAMPTZ;
     total_dispositivos INTEGER;
 BEGIN
-    SELECT COUNT(*), MIN(event_time), MAX(event_time), COUNT(DISTINCT fk_dispositivo_sala)
+    SELECT 
+        COUNT(*), 
+        MIN(event_time) AT TIME ZONE 'America/Sao_Paulo', 
+        MAX(event_time) AT TIME ZONE 'America/Sao_Paulo', 
+        COUNT(DISTINCT fk_dispositivo_sala)
     INTO total_consumo, min_date, max_date, total_dispositivos
     FROM consumo;
     
     RAISE NOTICE '========================================';
-    RAISE NOTICE 'DADOS NA TABELA CONSUMO';
+    RAISE NOTICE 'VERIFICACAO DOS DADOS';
     RAISE NOTICE '========================================';
-    RAISE NOTICE 'Total: %', total_consumo;
-    RAISE NOTICE 'Período: % até %', min_date, max_date;
-    RAISE NOTICE 'Dispositivos: %', total_dispositivos;
+    RAISE NOTICE 'Total de registros: %', total_consumo;
+    RAISE NOTICE 'Primeiro registro: %', min_date;
+    RAISE NOTICE 'Ultimo registro: %', max_date;
+    RAISE NOTICE 'Dispositivos ativos: %', total_dispositivos;
+    RAISE NOTICE 'Dias com dados: %', EXTRACT(DAY FROM (max_date - min_date));
     
     IF total_consumo = 0 THEN
         RAISE EXCEPTION '❌ Nenhum dado foi inserido!';
     END IF;
     
+    IF total_dispositivos < 14 THEN
+        RAISE WARNING '⚠️  Apenas % dispositivos tem dados (esperado: 14)', total_dispositivos;
+    END IF;
+    
 END $$;
 
 -- ========================================
--- 11. REFRESH VIEWS HORÁRIAS
+-- REFRESH VIEWS HORÁRIAS
 -- ========================================
 
 DO $$
@@ -848,65 +837,36 @@ BEGIN
     
     RAISE NOTICE '========================================';
     RAISE NOTICE 'REFRESH VIEWS HORÁRIAS';
-    RAISE NOTICE 'Período: % até %', min_time, max_time;
     RAISE NOTICE '========================================';
     
     -- 1. device_room
     RAISE NOTICE '→ consumo_hourly_device_room...';
     CALL refresh_continuous_aggregate('consumo_hourly_device_room', min_time, max_time);
     SELECT COUNT(*) INTO count_result FROM consumo_hourly_device_room;
-    RAISE NOTICE '  Registros: %', count_result;
+    RAISE NOTICE '  ✓ % registros', count_result;
     
     -- 2. device
     RAISE NOTICE '→ consumo_hourly_device...';
     CALL refresh_continuous_aggregate('consumo_hourly_device', min_time, max_time);
     SELECT COUNT(*) INTO count_result FROM consumo_hourly_device;
-    RAISE NOTICE '  Registros: %', count_result;
+    RAISE NOTICE '  ✓ % registros', count_result;
     
     -- 3. room
     RAISE NOTICE '→ consumo_hourly_room...';
     CALL refresh_continuous_aggregate('consumo_hourly_room', min_time, max_time);
     SELECT COUNT(*) INTO count_result FROM consumo_hourly_room;
-    RAISE NOTICE '  Registros: %', count_result;
+    RAISE NOTICE '  ✓ % registros', count_result;
     
     -- 4. department
     RAISE NOTICE '→ consumo_hourly_department...';
     CALL refresh_continuous_aggregate('consumo_hourly_department', min_time, max_time);
     SELECT COUNT(*) INTO count_result FROM consumo_hourly_department;
-    RAISE NOTICE '  Registros: %', count_result;
-    
-    RAISE NOTICE '✅ Views horárias prontas!';
+    RAISE NOTICE '  ✓ % registros', count_result;
     
 END $$;
 
 -- ========================================
--- 12. VERIFICAR VIEWS HORÁRIAS
--- ========================================
-
-DO $$
-DECLARE
-    c1 BIGINT; c2 BIGINT; c3 BIGINT; c4 BIGINT;
-BEGIN
-    SELECT COUNT(*) INTO c1 FROM consumo_hourly_device_room;
-    SELECT COUNT(*) INTO c2 FROM consumo_hourly_device;
-    SELECT COUNT(*) INTO c3 FROM consumo_hourly_room;
-    SELECT COUNT(*) INTO c4 FROM consumo_hourly_department;
-    
-    RAISE NOTICE '========================================';
-    RAISE NOTICE 'VERIFICAÇÃO VIEWS HORÁRIAS';
-    RAISE NOTICE '========================================';
-    RAISE NOTICE 'device_room:  %', c1;
-    RAISE NOTICE 'device:       %', c2;
-    RAISE NOTICE 'room:         %', c3;
-    RAISE NOTICE 'department:   %', c4;
-    
-    IF c1 = 0 OR c3 = 0 OR c4 = 0 THEN
-        RAISE WARNING '⚠️  Alguma view está vazia!';
-    END IF;
-END $$;
-
--- ========================================
--- 13. REFRESH VIEWS DIÁRIAS
+-- REFRESH VIEWS DIÁRIAS
 -- ========================================
 
 DO $$
@@ -918,108 +878,80 @@ BEGIN
     SELECT MIN(hour), MAX(hour) INTO min_time, max_time FROM consumo_hourly_device_room;
     
     IF min_time IS NULL THEN
-        RAISE EXCEPTION '❌ Views horárias vazias - não é possível gerar views diárias';
+        RAISE EXCEPTION '❌ Views horárias vazias!';
     END IF;
     
     RAISE NOTICE '========================================';
     RAISE NOTICE 'REFRESH VIEWS DIÁRIAS';
-    RAISE NOTICE 'Período: % até %', min_time, max_time;
     RAISE NOTICE '========================================';
     
     -- 1. device_room
     RAISE NOTICE '→ consumo_daily_device_room...';
     CALL refresh_continuous_aggregate('consumo_daily_device_room', min_time, max_time);
     SELECT COUNT(*) INTO count_result FROM consumo_daily_device_room;
-    RAISE NOTICE '  Registros: %', count_result;
+    RAISE NOTICE '  ✓ % registros', count_result;
     
     -- 2. device
     RAISE NOTICE '→ consumo_daily_device...';
     CALL refresh_continuous_aggregate('consumo_daily_device', min_time, max_time);
     SELECT COUNT(*) INTO count_result FROM consumo_daily_device;
-    RAISE NOTICE '  Registros: %', count_result;
+    RAISE NOTICE '  ✓ % registros', count_result;
     
     -- 3. room
     RAISE NOTICE '→ consumo_daily_room...';
     CALL refresh_continuous_aggregate('consumo_daily_room', min_time, max_time);
     SELECT COUNT(*) INTO count_result FROM consumo_daily_room;
-    RAISE NOTICE '  Registros: %', count_result;
+    RAISE NOTICE '  ✓ % registros', count_result;
     
     -- 4. department
     RAISE NOTICE '→ consumo_daily_department...';
     CALL refresh_continuous_aggregate('consumo_daily_department', min_time, max_time);
     SELECT COUNT(*) INTO count_result FROM consumo_daily_department;
-    RAISE NOTICE '  Registros: %', count_result;
-    
-    RAISE NOTICE '✅ Views diárias prontas!';
+    RAISE NOTICE '  ✓ % registros', count_result;
     
 END $$;
 
 -- ========================================
--- 14. VERIFICAR VIEWS DIÁRIAS
+-- RELATÓRIO FINAL
 -- ========================================
 
 DO $$
 DECLARE
     c1 BIGINT; c2 BIGINT; c3 BIGINT; c4 BIGINT;
+    d1 BIGINT; d2 BIGINT; d3 BIGINT; d4 BIGINT;
 BEGIN
-    SELECT COUNT(*) INTO c1 FROM consumo_daily_device_room;
-    SELECT COUNT(*) INTO c2 FROM consumo_daily_device;
-    SELECT COUNT(*) INTO c3 FROM consumo_daily_room;
-    SELECT COUNT(*) INTO c4 FROM consumo_daily_department;
+    -- Horarias
+    SELECT COUNT(*) INTO c1 FROM consumo_hourly_device_room;
+    SELECT COUNT(*) INTO c2 FROM consumo_hourly_device;
+    SELECT COUNT(*) INTO c3 FROM consumo_hourly_room;
+    SELECT COUNT(*) INTO c4 FROM consumo_hourly_department;
+    
+    -- Diarias
+    SELECT COUNT(*) INTO d1 FROM consumo_daily_device_room;
+    SELECT COUNT(*) INTO d2 FROM consumo_daily_device;
+    SELECT COUNT(*) INTO d3 FROM consumo_daily_room;
+    SELECT COUNT(*) INTO d4 FROM consumo_daily_department;
     
     RAISE NOTICE '========================================';
-    RAISE NOTICE 'VERIFICAÇÃO VIEWS DIÁRIAS';
+    RAISE NOTICE 'RELATORIO FINAL';
     RAISE NOTICE '========================================';
-    RAISE NOTICE 'device_room:  %', c1;
-    RAISE NOTICE 'device:       %', c2;
-    RAISE NOTICE 'room:         %', c3;
-    RAISE NOTICE 'department:   %', c4;
+    RAISE NOTICE 'VIEWS HORÁRIAS:';
+    RAISE NOTICE '  device_room:  %', c1;
+    RAISE NOTICE '  device:       %', c2;
+    RAISE NOTICE '  room:         %', c3;
+    RAISE NOTICE '  department:   %', c4;
+    RAISE NOTICE '';
+    RAISE NOTICE 'VIEWS DIÁRIAS:';
+    RAISE NOTICE '  device_room:  %', d1;
+    RAISE NOTICE '  device:       %', d2;
+    RAISE NOTICE '  room:         %', d3;
+    RAISE NOTICE '  department:   %', d4;
+    RAISE NOTICE '========================================';
     
-    IF c1 = 0 OR c3 = 0 OR c4 = 0 THEN
-        RAISE WARNING '⚠️  Alguma view está vazia!';
+    IF c1 > 0 AND d1 > 0 THEN
+        RAISE NOTICE '✅ TUDO PRONTO PARA USO!';
+    ELSE
+        RAISE WARNING '⚠️  Algumas views podem estar vazias';
     END IF;
+    
 END $$;
-
--- ========================================
--- 15. REABILITAR POLÍTICAS
--- ========================================
-
-SELECT add_continuous_aggregate_policy('consumo_hourly_device_room',
-    start_offset => INTERVAL '48 hours',
-    end_offset => INTERVAL '1 hour',
-    schedule_interval => INTERVAL '30 minutes');
-
-SELECT add_continuous_aggregate_policy('consumo_hourly_device',
-    start_offset => INTERVAL '48 hours',
-    end_offset => INTERVAL '1 hour',
-    schedule_interval => INTERVAL '30 minutes');
-
-SELECT add_continuous_aggregate_policy('consumo_hourly_room',
-    start_offset => INTERVAL '48 hours',
-    end_offset => INTERVAL '1 hour',
-    schedule_interval => INTERVAL '30 minutes');
-
-SELECT add_continuous_aggregate_policy('consumo_hourly_department',
-    start_offset => INTERVAL '48 hours',
-    end_offset => INTERVAL '1 hour',
-    schedule_interval => INTERVAL '30 minutes');
-
-SELECT add_continuous_aggregate_policy('consumo_daily_device_room',
-    start_offset => INTERVAL '3 days',
-    end_offset => INTERVAL '1 day',
-    schedule_interval => INTERVAL '1 hour');
-
-SELECT add_continuous_aggregate_policy('consumo_daily_device',
-    start_offset => INTERVAL '3 days',
-    end_offset => INTERVAL '1 day',
-    schedule_interval => INTERVAL '1 hour');
-
-SELECT add_continuous_aggregate_policy('consumo_daily_room',
-    start_offset => INTERVAL '3 days',
-    end_offset => INTERVAL '1 day',
-    schedule_interval => INTERVAL '1 hour');
-
-SELECT add_continuous_aggregate_policy('consumo_daily_department',
-    start_offset => INTERVAL '3 days',
-    end_offset => INTERVAL '1 day',
-    schedule_interval => INTERVAL '1 hour');
