@@ -3,7 +3,6 @@ package com.lumenlabs.energymanagement.dto.company;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
 public class CompanyRegistrationDTO {
@@ -20,7 +19,7 @@ public class CompanyRegistrationDTO {
 	@Size(max = 100, message = "Nome deve ter no máximo 100 caracteres")
 	private String nomeFantasia;
 
-	@Pattern(regexp = "\\+?\\d{0,3}?\\s?\\(?\\d{2,3}\\)?\\s?\\d{4,5}-?\\d{4}", message = "Telefone inválido")
+	@NotBlank(message = "Telefone é obrigatório")
 	private String telefone;
 
 	@NotBlank(message = "Logradouro é obrigatório")
@@ -41,7 +40,6 @@ public class CompanyRegistrationDTO {
 	@NotBlank(message = "UF é obrigatória")
 	private String uf;
 
-	@NotBlank(message = "Complemento é obrigatório")
 	private String complemento;
 
 	@NotBlank(message = "Nome do administrador é obrigatório")
