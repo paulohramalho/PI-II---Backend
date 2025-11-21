@@ -37,7 +37,7 @@ public class SecurityFilter extends OncePerRequestFilter {
 
 		if (token != null) {
 			String login = jwtService.validateToken(token);
-			User user = userRepository.findByEmail(login).orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Usuário não encontrado"));
+			User user = userRepository.findByEmailIgnoreCase(login).orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Usuário não encontrado"));
 			if (user != null) {
 				Authentication auth = new UsernamePasswordAuthenticationToken(login, null, user.getAuthorities());
 

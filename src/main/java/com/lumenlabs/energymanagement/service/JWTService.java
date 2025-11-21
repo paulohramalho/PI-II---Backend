@@ -30,7 +30,7 @@ public class JWTService {
 	private String KEY;
 
 	public String getToken(LoginDTO loginDto) {
-		User user = userRepository.findByEmail(loginDto.getEmail()).orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Usuário não encontrado"));;
+		User user = userRepository.findByEmailIgnoreCase(loginDto.getEmail()).orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Usuário não encontrado"));;
 		String token = generateJwt(user);
 		return token;
 	}

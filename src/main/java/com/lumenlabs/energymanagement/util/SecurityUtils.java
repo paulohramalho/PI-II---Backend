@@ -30,7 +30,7 @@ public class SecurityUtils {
         }
 
         String email = auth.getName();
-        return userRepository.findByEmail(email)
+        return userRepository.findByEmailIgnoreCase(email)
                 .orElseThrow(() -> new RuntimeException("User not found"));
     }
 

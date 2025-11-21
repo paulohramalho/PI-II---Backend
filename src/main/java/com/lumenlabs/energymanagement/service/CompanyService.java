@@ -66,7 +66,7 @@ public class CompanyService {
 	}
 
 	private void basicValidation(CompanyRegistrationDTO dto) {
-		userRepository.findByEmail(dto.getAdminEmail()).ifPresent(u -> {
+		userRepository.findByEmailIgnoreCase(dto.getAdminEmail()).ifPresent(u -> {
 			throw new ResponseStatusException(HttpStatus.CONFLICT, "Email do administrador já registrado");
 		});
 
