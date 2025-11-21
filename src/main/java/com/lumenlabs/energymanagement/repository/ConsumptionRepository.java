@@ -296,7 +296,7 @@ public interface ConsumptionRepository extends JpaRepository<Consumption, UUID> 
     @Query(value = """
             SELECT
                 chdr.hour as timestamp,
-                SUM(chdr.total_potencia) as total_potencia,
+                SUM(chdr.total_potencia)/1000 as total_potencia,
                 AVG(chdr.avg_potencia) as avg_potencia,
                 MAX(chdr.max_potencia) as max_potencia,
                 MIN(chdr.min_potencia) as min_potencia
@@ -319,7 +319,7 @@ public interface ConsumptionRepository extends JpaRepository<Consumption, UUID> 
     @Query(value = """
             SELECT
                 CONCAT(d.nome, ' - ', sl.nome) as device_name,
-                SUM(chdr.total_potencia) as total_potencia
+                SUM(chdr.total_potencia)/1000 as total_potencia
             FROM consumo_hourly_device_room chdr
             JOIN dispositivo_sala ds ON chdr.fk_dispositivo_sala = ds.id
             JOIN dispositivo d ON ds.fk_dispositivo = d.id
@@ -344,7 +344,7 @@ public interface ConsumptionRepository extends JpaRepository<Consumption, UUID> 
     @Query(value = """
             SELECT
                 s.nome as setor_name,
-                SUM(chd.total_potencia) as total_potencia
+                SUM(chd.total_potencia)/1000 as total_potencia
             FROM consumo_hourly_department chd
             JOIN setor s ON chd.fk_setor = s.id
             WHERE chd.fk_empresa = :empresaId
