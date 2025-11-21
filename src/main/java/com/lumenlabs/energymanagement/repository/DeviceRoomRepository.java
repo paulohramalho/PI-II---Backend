@@ -57,5 +57,8 @@ public interface DeviceRoomRepository extends JpaRepository<DeviceRoom, UUID> {
 		    @Param("companyId") UUID companyId,
 		    @Param("since") LocalDateTime since
 		);
+
+	Long countByCompanyId(UUID empresaId);
+	
 }
 

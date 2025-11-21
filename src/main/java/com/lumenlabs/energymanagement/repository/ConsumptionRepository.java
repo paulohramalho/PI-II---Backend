@@ -276,4 +276,108 @@ public interface ConsumptionRepository extends JpaRepository<Consumption, UUID> 
 			""", nativeQuery = true)
 	List<Object[]> findDeviceDetailDaily(@Param("empresaId") UUID empresaId, @Param("deviceRoomId") UUID deviceRoomId,
 			@Param("startDate") LocalDateTime startDate, @Param("endDate") LocalDateTime endDate);
+	
+	@Query(value = """
+            SELECT SUM(chdr.total_potencia) as total_consumo
+            FROM consumo_hourly_device_room chdr
+            WHERE chdr.fk_empresa = :empresaId
+                AND chdr.hour >= :startDate
+                AND chdr.hour < :endDate
+            """, nativeQuery = true)
+    Double getTotalConsumptionByCompany(
+            @Param("empresaId") UUID empresaId,
+            @Param("startDate") LocalDateTime startDate,
+            @Param("endDate") LocalDateTime endDate);
+
+    // ========================================
+    // DASHBOARD - CONSUMO POR HORA (EMPRESA INTEIRA)
+    // ========================================
+    
+    @Query(value = """
+            SELECT
+                chdr.hour as timestamp,
+                SUM(chdr.total_potencia) as total_potencia,
+                AVG(chdr.avg_potencia) as avg_potencia,
+                MAX(chdr.max_potencia) as max_potencia,
+                MIN(chdr.min_potencia) as min_potencia
+            FROM consumo_hourly_device_room chdr
+            WHERE chdr.fk_empresa = :empresaId
+                AND chdr.hour >= :startDate
+                AND chdr.hour < :endDate
+            GROUP BY chdr.hour
+            ORDER BY chdr.hour
+            """, nativeQuery = true)
+    List<Object[]> getHourlyConsumptionByCompany(
+            @Param("empresaId") UUID empresaId,
+            @Param("startDate") LocalDateTime startDate,
+            @Param("endDate") LocalDateTime endDate);
+
+    // ========================================
+    // DASHBOARD - TOP N DISPOSITIVOS
+    // ========================================
+    
+    @Query(value = """
+            SELECT
+                CONCAT(d.nome, ' - ', sl.nome) as device_name,
+                SUM(chdr.total_potencia) as total_potencia
+            FROM consumo_hourly_device_room chdr
+            JOIN dispositivo_sala ds ON chdr.fk_dispositivo_sala = ds.id
+            JOIN dispositivo d ON ds.fk_dispositivo = d.id
+            JOIN sala sl ON ds.fk_sala = sl.id
+            WHERE chdr.fk_empresa = :empresaId
+                AND chdr.hour >= :startDate
+                AND chdr.hour < :endDate
+            GROUP BY d.nome, sl.nome
+            ORDER BY total_potencia DESC
+            LIMIT :limit
+            """, nativeQuery = true)
+    List<Object[]> getTopDevicesByConsumption(
+            @Param("empresaId") UUID empresaId,
+            @Param("startDate") LocalDateTime startDate,
+            @Param("endDate") LocalDateTime endDate,
+            @Param("limit") int limit);
+
+    // ========================================
+    // DASHBOARD - CONSUMO POR SETOR
+    // ========================================
+    
+    @Query(value = """
+            SELECT
+                s.nome as setor_name,
+                SUM(chd.total_potencia) as total_potencia
+            FROM consumo_hourly_department chd
+            JOIN setor s ON chd.fk_setor = s.id
+            WHERE chd.fk_empresa = :empresaId
+                AND chd.hour >= :startDate
+                AND chd.hour < :endDate
+            GROUP BY s.nome
+            ORDER BY total_potencia DESC
+            """, nativeQuery = true)
+    List<Object[]> getConsumptionByDepartment(
+            @Param("empresaId") UUID empresaId,
+            @Param("startDate") LocalDateTime startDate,
+            @Param("endDate") LocalDateTime endDate);
+
+    // ========================================
+    // DASHBOARD - ÚLTIMAS LEITURAS
+    // ========================================
+    
+    @Query(value = """
+            SELECT
+                c.event_time,
+                CONCAT(ds.apelido, ' - ', sl.nome) as device_name,
+                c.corrente,
+                c.tensao,
+                c.potencia_ativa
+            FROM consumo c
+            JOIN dispositivo_sala ds ON c.fk_dispositivo_sala = ds.id
+            JOIN dispositivo d ON ds.fk_dispositivo = d.id
+            JOIN sala sl ON ds.fk_sala = sl.id
+            WHERE ds.fk_empresa = :empresaId
+            ORDER BY c.event_time DESC
+            LIMIT :limit
+            """, nativeQuery = true)
+    List<Object[]> getLatestReadings(
+            @Param("empresaId") UUID empresaId,
+            @Param("limit") int limit);
 }
