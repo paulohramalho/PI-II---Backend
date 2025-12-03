@@ -56,7 +56,7 @@ public class UserService {
 		User user = userRepository.findByCompanyIdAndId(companyId, id)
 				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuário não encontrado"));
 		if(user.getRole().equals(Role.ADMIN) && userRepository.countByRoleAndCompanyId(Role.ADMIN, companyId) < 2)
-			throw new ResponseStatusException(HttpStatus.CONFLICT, "Administrador único");
+			throw new ResponseStatusException(HttpStatus.CONFLICT, "Único administrador");
 		userRepository.delete(user);
 	}
 	
