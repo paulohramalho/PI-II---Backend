@@ -278,7 +278,7 @@ public interface ConsumptionRepository extends JpaRepository<Consumption, UUID> 
 			@Param("startDate") LocalDateTime startDate, @Param("endDate") LocalDateTime endDate);
 	
 	@Query(value = """
-            SELECT SUM(chdr.total_potencia) as total_consumo
+            SELECT SUM(chdr.total_potencia)/1000 as total_consumo
             FROM consumo_hourly_device_room chdr
             WHERE chdr.fk_empresa = :empresaId
                 AND chdr.hour >= :startDate
